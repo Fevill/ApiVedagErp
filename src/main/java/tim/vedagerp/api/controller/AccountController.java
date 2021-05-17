@@ -39,7 +39,7 @@ public class AccountController {
 			Account account = accountService.get(id);
 			return new ResponseEntity<>(account, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
-			return new ResponseEntity<>("Pas de valeur pour id: " + id, HttpStatus.OK);
+			return new ResponseEntity<>(String.format("Pas de valeur pour id: %d", id), HttpStatus.OK);
 		}
 	}
 

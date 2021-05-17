@@ -2,205 +2,271 @@ package tim.vedagerp.api.controller;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.entities.JournalRow;
 import tim.vedagerp.api.repositories.AccountRepository;
+import tim.vedagerp.api.repositories.JournalRowRepository;
 
 @SpringBootTest
 public class JournalRowControllerTest {
 	
 	@Autowired
+	JournalRowRepository journalRowRepository;
+	
+	@Autowired
 	AccountRepository accountRepository;
 	
 	@Autowired
-	AccountController accountController;
+	JournalRowController journalRowController;
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@Test
-    public void getAccountTest() throws Exception{
+    public void getJournalRowTest() throws Exception{
 		
 		ResponseEntity<?> response;
-		List<Account> actualList;
+		List<JournalRow> actualList;
 		Long expectedLength = 5L;
 		Long actualLength;
-		Account expectedAccount1 = new Account ();
-		expectedAccount1.setLabel("Label "+1);
-		expectedAccount1.setNumber("Number "+1);
+		JournalRow expectedJournalRow1 = new JournalRow ();
+		
+		Account debit = new Account ();
+		debit.setLabel("Debit Label "+1);
+		debit.setNumber("Debit Number "+1);
+		debit=accountRepository.saveAndFlush(debit);
+		
+		
+		Account credit = new Account ();
+		credit.setLabel("Credit Label "+1);
+		credit.setNumber("Credit Number "+1);
+		credit=accountRepository.saveAndFlush(credit);
+		
+		expectedJournalRow1.setDateOperation(new Date(01,01,1990)); 
+		expectedJournalRow1.setLabel("Label "+1);
+		expectedJournalRow1.setDebit(debit);
+		expectedJournalRow1.setCredit(credit);
+		expectedJournalRow1.setAmount(1000);
+		journalRowRepository.save(expectedJournalRow1);
 		
 		// Ajouter des comptes
 		for(Long i=1L;i<=expectedLength;i++) {
-			Account account = new Account ();
-			account.setLabel("Label "+i);
-			account.setNumber("Number "+i);
+			JournalRow journalRow = new JournalRow ();
+			journalRow.setLabel("Label "+i);
+			journalRow.setDebit(debit);
+			journalRow.setCredit(credit);
+			journalRow.setAmount(1000);
 			
-			accountRepository.save(account);
+			journalRowRepository.save(journalRow);
 		}
 		
 		// Début du test
-		response = accountController.getAccount();
-		actualList = (List<Account>) response.getBody();
+		response = journalRowController.getJournal();
+		actualList = (List<JournalRow>) response.getBody();
 		actualLength = (long) actualList.size();
-		assertEquals(expectedLength, actualLength);
-		assertEquals(expectedAccount1.getLabel(),actualList.get(0).getLabel());
-		assertEquals(expectedAccount1.getNumber(),actualList.get(0).getNumber());
+		assertEquals(expectedJournalRow1.getLabel(),actualList.get(0).getLabel());
+		assertEquals(expectedJournalRow1.getAmount(),actualList.get(0).getAmount(),0f);
+		assertEquals(expectedJournalRow1.getCredit().getLabel(),actualList.get(0).getCredit().getLabel());
+		assertEquals(expectedJournalRow1.getDebit().getLabel(),actualList.get(0).getDebit().getLabel());
 
 		
 		// Supprimer les comptes crées
-		for(Account account: actualList) {
-			accountRepository.deleteById(account.getId());
+		for(JournalRow journalRow: actualList) {
+			journalRowRepository.deleteById(journalRow.getId());
 		}
         
     }
 	
+	
 	@SuppressWarnings("unchecked")
 	@Test
-    public void getAccountEmptyTest() throws Exception{
+    public void getJournalRowEmptyTest() throws Exception{
 		
 		ResponseEntity<?> response;
-		List<Account> actualList;
+		List<JournalRow> actualList;
 		Long expectedLength = 0L;
 		Long actualLength;
 
 		// Début du test
-		response = accountController.getAccount();
-		actualList = (List<Account>) response.getBody();
+		response = journalRowController.getJournal();
+		actualList = (List<JournalRow>) response.getBody();
 		actualLength = (long) actualList.size();
 		assertEquals(expectedLength, actualLength);
         
     }
 	
 	@Test
-    public void getAccount() throws Exception{
+    public void getJournalRow() throws Exception{
 		
 		Long id;
-		Account actualAccount;
-		Account expectedAccount = new Account ();
+		JournalRow actualJournalRow;
+		JournalRow expectedJournalRow = new JournalRow ();
 		
-		expectedAccount.setLabel("Label "+10);
-		expectedAccount.setNumber("Number "+10);
+		Account debit = new Account ();
+		debit.setLabel("Debit Label "+1);
+		debit.setNumber("Debit Number "+1);
+		debit=accountRepository.saveAndFlush(debit);
+		
+		
+		Account credit = new Account ();
+		credit.setLabel("Credit Label "+1);
+		credit.setNumber("Credit Number "+1);
+		credit=accountRepository.saveAndFlush(credit);
+		
+		expectedJournalRow.setDateOperation(new Date(01,01,1990)); 
+		expectedJournalRow.setLabel("Label "+1);
+		expectedJournalRow.setDebit(debit);
+		expectedJournalRow.setCredit(credit);
+		expectedJournalRow.setAmount(1000);
+		
 		
 		// Ajouter des comptes
-		id = accountRepository.saveAndFlush(expectedAccount).getId();
+		id = journalRowRepository.saveAndFlush(expectedJournalRow).getId();
 				
 		// Début du test
-		actualAccount = (Account) accountController.getAccount(id).getBody();
-		assertEquals(expectedAccount.getLabel(),actualAccount.getLabel());
-		assertEquals(expectedAccount.getNumber(),actualAccount.getNumber());
+		actualJournalRow = (JournalRow) journalRowController.getJournal(id).getBody();
+		assertEquals(expectedJournalRow.getLabel(),actualJournalRow.getLabel());
+		assertEquals(expectedJournalRow.getAmount(),actualJournalRow.getAmount(),0f);
+		assertEquals(expectedJournalRow.getCredit().getLabel(),actualJournalRow.getCredit().getLabel());
+		assertEquals(expectedJournalRow.getDebit().getLabel(),actualJournalRow.getDebit().getLabel());
 		
 		// Supprimer les comptes crées
-		accountRepository.deleteById(actualAccount.getId());
+		journalRowRepository.deleteById(actualJournalRow.getId());
 		
     }
 	
 	@Test
-    public void getAccountIdNotExist() throws Exception{
+    public void getJournalRowIdNotExist() throws Exception{
 		
 		Long id= 10L;
 		String actual;
 		String expected = "Pas de valeur pour id: "+id;
 		
 		// Début du test
-		actual = (String) accountController.getAccount(id).getBody();
+		actual = (String) journalRowController.getJournal(id).getBody();
 		assertEquals(expected,actual);
 		
     }
 	
-	@Test
-    public void getAccountIdNull() throws Exception{
-		
-		Long id= null;
-		String actual;
-		String expected = "Id est null";
-		
-		// Début du test
-		actual = (String) accountController.getAccount(id).getBody();
-		assertEquals(expected,actual);
-		
-    }
-	
-	@Test // Test de création d'un compte
-    public void postAccount() throws Exception{
+	@Test // Test de création d'une écriture comptable
+    public void postJournalRow() throws Exception{
 		
         final Long id = 15L;
-		Account actualAccount;
-		Account expectedAccount = new Account ();
+		JournalRow actualJournalRow;
+		JournalRow expectedJournalRow = new JournalRow ();
 		
-		expectedAccount.setLabel("Label "+id);
-		expectedAccount.setNumber("Number "+id);
+		Account debit = new Account ();
+		debit.setLabel("Debit Label "+1);
+		debit.setNumber("Debit Number "+1);
+		debit=accountRepository.saveAndFlush(debit);
+		
+		
+		Account credit = new Account ();
+		credit.setLabel("Credit Label "+1);
+		credit.setNumber("Credit Number "+1);
+		credit=accountRepository.saveAndFlush(credit);
+		
+		expectedJournalRow.setDateOperation(new Date(01,01,1990)); 
+		expectedJournalRow.setLabel("Label "+1);
+		expectedJournalRow.setDebit(debit);
+		expectedJournalRow.setCredit(credit);
+		expectedJournalRow.setAmount(1000);
 		
 		// Début du test
-		actualAccount = (Account) accountController.postAccount(expectedAccount).getBody();
-		assertEquals(expectedAccount.getLabel(),actualAccount.getLabel());
-		assertEquals(expectedAccount.getNumber(),actualAccount.getNumber());
+		actualJournalRow = (JournalRow) journalRowController.postJournal(expectedJournalRow).getBody();
+		assertEquals(expectedJournalRow.getLabel(),actualJournalRow.getLabel());
+		assertEquals(expectedJournalRow.getAmount(),actualJournalRow.getAmount(),0f);
+		assertEquals(expectedJournalRow.getCredit().getLabel(),actualJournalRow.getCredit().getLabel());
+		assertEquals(expectedJournalRow.getDebit().getLabel(),actualJournalRow.getDebit().getLabel());
 		
 		// Supprimer les comptes crées
-		accountRepository.deleteById(actualAccount.getId());
+		journalRowRepository.deleteById(actualJournalRow.getId());
 		
     }
 	
-	@Test // Modifier un compte
-    public void putAccount() throws Exception{
+	@Test // Modifier une écriture comptable
+    public void putJournalRow() throws Exception{
 		
         final Long id = 15L;
         Long actualid ;
-		Account actualAccount;
-		Account expectedAccount = new Account ();
+		JournalRow actualJournalRow;
+		JournalRow expectedJournalRow = new JournalRow ();
+				
+		Account debit = new Account ();
+		debit.setLabel("Debit Label "+1);
+		debit.setNumber("Debit Number "+1);
+		debit=accountRepository.saveAndFlush(debit);
+				
+		Account credit = new Account ();
+		credit.setLabel("Credit Label "+1);
+		credit.setNumber("Credit Number "+1);
+		credit=accountRepository.saveAndFlush(credit);
 		
-		
-		expectedAccount.setLabel("Label "+id);
-		expectedAccount.setNumber("Number "+id);
+		expectedJournalRow.setDateOperation(new Date(01,01,1990)); 
+		expectedJournalRow.setLabel("Label "+1);
+		expectedJournalRow.setDebit(debit);
+		expectedJournalRow.setCredit(credit);
+		expectedJournalRow.setAmount(1000);
 		
 		// Ajouter des comptes
-		actualid = accountRepository.saveAndFlush(expectedAccount).getId();
+		actualid = journalRowRepository.saveAndFlush(expectedJournalRow).getId();
 		
-		expectedAccount.setId(actualid);
-		expectedAccount.setLabel("Label Modifier "+id);
-		expectedAccount.setNumber("Number Modifier "+id);
+		expectedJournalRow.setId(actualid);
+
+		expectedJournalRow.setDateOperation(new Date(01,01,1990)); 
+		expectedJournalRow.setLabel("Label Modifier"+1);
+		expectedJournalRow.setAmount(1005);
 		
 		// Début du test
-		actualAccount = (Account) accountController.putAccount(expectedAccount).getBody();
-		assertEquals(expectedAccount.getLabel(),actualAccount.getLabel());
-		assertEquals(expectedAccount.getNumber(),actualAccount.getNumber());
+		actualJournalRow = (JournalRow) journalRowController.putJournal(expectedJournalRow).getBody();
+		assertEquals(expectedJournalRow.getLabel(),actualJournalRow.getLabel());
+		assertEquals(expectedJournalRow.getAmount(),actualJournalRow.getAmount(),0f);
+		assertEquals(expectedJournalRow.getCredit().getLabel(),actualJournalRow.getCredit().getLabel());
+		assertEquals(expectedJournalRow.getDebit().getLabel(),actualJournalRow.getDebit().getLabel());
 		
 		// Supprimer les comptes crées
-		accountRepository.deleteById(actualid);
+		journalRowRepository.deleteById(actualid);
 		
     }
 	
-	@Test  // Supprimer un compte
-    public void delAccount() throws Exception{
+	@Test  // Supprimer une écriture comptable
+    public void delJournalRow() throws Exception{
 		
 		 	final Long id = 20L;
 		 	Long actualid ;
 			String actual;
 			String expected = "Success";
-			Account account = new Account ();
+			JournalRow journalRow = new JournalRow ();
 			
-			account.setLabel("Label "+id);
-			account.setNumber("Number "+id);
+			Account debit = new Account ();
+			debit.setLabel("Debit Label "+1);
+			debit.setNumber("Debit Number "+1);
+			debit=accountRepository.saveAndFlush(debit);
+					
+			Account credit = new Account ();
+			credit.setLabel("Credit Label "+1);
+			credit.setNumber("Credit Number "+1);
+			credit=accountRepository.saveAndFlush(credit);
+			
+			journalRow.setDateOperation(new Date(01,01,1990)); 
+			journalRow.setLabel("Label "+1);
+			journalRow.setDebit(debit);
+			journalRow.setCredit(credit);
+			journalRow.setAmount(1000);
+			
+			journalRow = journalRowRepository.saveAndFlush(journalRow);
 			
 			// Ajouter des comptes
-			actualid = accountRepository.saveAndFlush(account).getId();
+			actualid = journalRowRepository.saveAndFlush(journalRow).getId();
 			
 			// Début du test
-			actual = (String) accountController.delAccount(actualid).getBody();
+			actual = (String) journalRowController.delJournal(actualid).getBody();
 			assertEquals(expected,actual);
 
     }

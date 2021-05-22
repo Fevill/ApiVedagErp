@@ -3,12 +3,16 @@ package tim.vedagerp.api.controller;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,25 +20,34 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
 
 import tim.vedagerp.api.entities.Account;
+import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.services.AccountService;
 
 @Controller
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("api/v1/accounts")
 public class AccountController {
 
 	@Autowired
 	AccountService accountService;
+	
+	private static Logger logger = LogManager.getLogger(AccountController.class);
 
 	@GetMapping()
-	public ResponseEntity<?> getAccount() {
-		List<Account> accounts = accountService.list();
+	public ResponseEntity<?> getAccount(@RequestParam("sort") String sort,@RequestParam("order") String order,@RequestParam("page") int page,@RequestParam("size") int size) {
+		logger.info("getAccount");
+		Page<Account> accounts = accountService.list(sort,order,page,size);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getAccount(@PathVariable("id") long id) {
+		logger.info("getAccount");
 		try {
 			Account account = accountService.get(id);
 			return new ResponseEntity<>(account, HttpStatus.OK);
@@ -45,6 +58,7 @@ public class AccountController {
 
 	@PostMapping()
 	public ResponseEntity<?> postAccount(@RequestBody Account body) {
+		logger.info("postAccount");
 		try {
 			Account account = accountService.add(body);
 			return new ResponseEntity<>(account, HttpStatus.OK);
@@ -52,9 +66,21 @@ public class AccountController {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
 		}
 	}
+	
+	@PostMapping("/all")
+	public ResponseEntity<?> postAccountAll(@RequestBody List<Account> body) {
+		logger.info("postAccountAll");
+		try {
+			List<Account> accounts = accountService.addAll(body);
+			return new ResponseEntity<>(accounts, HttpStatus.OK);
+		} catch (HttpMessageNotReadableException ex) {
+			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
+		}
+	}
 
 	@PutMapping()
 	public ResponseEntity<?> putAccount(@RequestBody Account body) {
+		logger.info("putAccount");
 		try {
 			Account account = accountService.update(body);
 			return new ResponseEntity<>(account, HttpStatus.OK);
@@ -65,9 +91,11 @@ public class AccountController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delAccount(@PathVariable("id") long id) {
+		logger.info("delAccount");
 
 		try {
-			String res = accountService.delete(id);
+			Message res = new Message();
+			res.setText(accountService.delete(id));
 			return new ResponseEntity<>(res, HttpStatus.OK);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ResponseEntity<>(String.format("Id %d n'existe pas.", id), HttpStatus.OK);

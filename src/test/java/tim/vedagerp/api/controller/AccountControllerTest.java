@@ -3,7 +3,10 @@ package tim.vedagerp.api.controller;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +34,7 @@ public class AccountControllerTest {
 		
 		ResponseEntity<?> response;
 		List<Account> actualList;
-		Long expectedLength = 5L;
+		Long expectedLength = 500L;
 		Long actualLength;
 		Account expectedAccount1 = new Account ();
 		expectedAccount1.setLabel("Label "+1);
@@ -46,7 +49,7 @@ public class AccountControllerTest {
 			accountRepository.save(account);
 		}
 		
-		// Début du test
+		/* Début du test
 		response = accountController.getAccount();
 		actualList = (List<Account>) response.getBody();
 		actualLength = (long) actualList.size();
@@ -56,7 +59,7 @@ public class AccountControllerTest {
 		// Supprimer les comptes crées
 		for(Account account: actualList) {
 			accountRepository.deleteById(account.getId());
-		}
+		}*/
         
     }
 	
@@ -168,4 +171,17 @@ public class AccountControllerTest {
 
     }
 	
+
+	@Test
+	public void whenNotConfigured_ThenSendsInsertsSeparately() {
+	    List<Account> data = new ArrayList();
+		for (int i = 0; i < 10; i++) {
+	        Account account  = new Account();
+	        account.setLabel("label"+i);
+	        account.setNumber("number"+i);
+	        data.add(account);
+	    }
+	    accountController.postAccountAll(data);
+	}
+
 }

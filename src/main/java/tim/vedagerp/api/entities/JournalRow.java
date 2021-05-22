@@ -15,7 +15,7 @@ import javax.persistence.Table;
 public class JournalRow {
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Long id;
 	private Date dateOperation;
 	private	String	label;

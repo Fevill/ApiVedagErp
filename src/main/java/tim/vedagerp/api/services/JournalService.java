@@ -1,15 +1,16 @@
 package tim.vedagerp.api.services;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.entities.JournalRow;
-import tim.vedagerp.api.repositories.AccountRepository;
 import tim.vedagerp.api.repositories.JournalRowRepository;
 
 @Service
@@ -19,8 +20,14 @@ public class JournalService {
 	JournalRowRepository journalRowRepository; 
 
 	// Le journal
-    public List<JournalRow> list() {
-        return journalRowRepository.findAll();
+    public Page<JournalRow> list(String sort, String order, int page, int size) {
+    	Pageable pageable=null;
+    	if(order.equals("asc")) {
+    		pageable=PageRequest.of(page, size, Sort.by(sort).ascending());
+    	}else {
+    		pageable=PageRequest.of(page, size, Sort.by(sort).descending());
+    	}
+        return journalRowRepository.findAll(pageable);
     }
 	
 	// Ajouter une écriture comptable

@@ -5,10 +5,15 @@ import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.repositories.AccountRepository;
+
 
 @Service
 public class AccountService {
@@ -17,8 +22,15 @@ public class AccountService {
 	AccountRepository accountRepository; 
 
 	// Le journal
-    public List<Account> list() {
-        return accountRepository.findAll();
+    public Page<Account>  list(String sort, String order, int page, int size) {
+    	Pageable pageable=null;
+    	if(order.equals("asc")) {
+    		pageable=PageRequest.of(page, size, Sort.by(sort).ascending());
+    	}else {
+    		pageable=PageRequest.of(page, size, Sort.by(sort).descending());
+    	}
+		return accountRepository.findAll(pageable); 
+        
     }
 	
 	// Ajouter une écriture comptable
@@ -28,12 +40,17 @@ public class AccountService {
 	
     // Ajouter une écriture comptable
     public Account add(Account body) {
-    	return accountRepository.saveAndFlush(body);
+    	return accountRepository.save(body);
+    }
+    
+    // Ajouter une écriture comptable
+    public List<Account> addAll(List<Account> body) {
+    	return accountRepository.saveAll(body);
     }
 	
     // Modifier une écriture comptable
     public Account update(Account body) {
-    	return accountRepository.saveAndFlush(body);
+    	return accountRepository.save(body);
     }
 	
 	// Supprimer une écriture comptable

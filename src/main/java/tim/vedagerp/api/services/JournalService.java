@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.repositories.JournalRowRepository;
 
 @Service
@@ -61,6 +62,16 @@ public class JournalService {
 
 	public List<JournalRow> addAll(List<JournalRow> body) {
 		return journalRowRepository.saveAll(body);
+	}
+
+	// Récupération du grand livre
+	public Ledger getLedger(Long id) {
+		
+		Ledger ledger = new Ledger();
+		ledger.setCredit(journalRowRepository.findByCreditId(id));
+		ledger.setDebit(journalRowRepository.findByDebitId(id));
+		
+		return ledger;
 	}
 	
 }

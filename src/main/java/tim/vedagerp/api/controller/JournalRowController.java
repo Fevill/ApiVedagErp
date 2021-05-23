@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.services.JournalService;
 
@@ -50,6 +51,16 @@ public class JournalRowController {
 		try {
 			JournalRow account = journalService.get(id);
 			return new ResponseEntity<>(account, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Pas de valeur pour id: " + id, HttpStatus.OK);
+		}
+	}
+	
+	@GetMapping("/ledger")
+	public ResponseEntity<?> getJournal(@RequestParam("accountId") Long id) {
+		try {
+			Ledger ledger = journalService.getLedger(id);
+			return new ResponseEntity<>(ledger, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Pas de valeur pour id: " + id, HttpStatus.OK);
 		}

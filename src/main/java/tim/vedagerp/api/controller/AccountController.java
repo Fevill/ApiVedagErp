@@ -41,7 +41,15 @@ public class AccountController {
 	@GetMapping()
 	public ResponseEntity<?> getAccount(@RequestParam("sort") String sort,@RequestParam("order") String order,@RequestParam("page") int page,@RequestParam("size") int size) {
 		logger.info("getAccount");
-		Page<Account> accounts = accountService.list(sort,order,page,size);
+		Page<Account> accounts = accountService.listSortOrder(sort,order,page,size);
+		return new ResponseEntity<>(accounts, HttpStatus.OK);
+	}
+	
+
+	@GetMapping("/all")
+	public ResponseEntity<?> getAccountAll() {
+		logger.info("getAccountAll");
+		List<Account> accounts = accountService.list();
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 

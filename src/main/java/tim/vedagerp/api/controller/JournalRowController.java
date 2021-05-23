@@ -1,5 +1,6 @@
 package tim.vedagerp.api.controller;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.services.JournalService;
 
 
@@ -33,7 +35,13 @@ public class JournalRowController {
 
 	@GetMapping()
 	public ResponseEntity<?> getJournal(@RequestParam("sort") String sort,@RequestParam("order") String order,@RequestParam("page") int page,@RequestParam("size") int size) {
-		Page<JournalRow> accounts = journalService.list(sort,order,page,size);
+		Page<JournalRow> accounts = journalService.listSortOrder(sort,order,page,size);
+		return new ResponseEntity<>(accounts, HttpStatus.OK);
+	}
+	
+	@GetMapping("/all")
+	public ResponseEntity<?> getJournal() {
+		List<JournalRow> accounts = journalService.list();
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 
@@ -56,6 +64,16 @@ public class JournalRowController {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
 		}
 	}
+	
+	@PostMapping("/all")
+	public ResponseEntity<?> postJournalAll(@RequestBody  List<JournalRow> body) {
+		try {
+			 List<JournalRow> account = journalService.addAll(body);
+			return new ResponseEntity<>(account, HttpStatus.OK);
+		} catch (HttpMessageNotReadableException ex) {
+			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
+		}
+	}
 
 	@PutMapping()
 	public ResponseEntity<?> putJournal(@RequestBody JournalRow body) {
@@ -71,7 +89,8 @@ public class JournalRowController {
 	public ResponseEntity<?> delJournal(@PathVariable("id") long id) {
 
 		try {
-			String res = journalService.delete(id);
+			Message res = new Message();
+			res.setText(journalService.delete(id));
 			return new ResponseEntity<>(res, HttpStatus.OK);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ResponseEntity<>(String.format("Id %d n'existe pas.", id), HttpStatus.OK);

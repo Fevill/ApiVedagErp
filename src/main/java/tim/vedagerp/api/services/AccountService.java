@@ -22,7 +22,7 @@ public class AccountService {
 	AccountRepository accountRepository; 
 
 	// Le journal
-    public Page<Account>  list(String sort, String order, int page, int size) {
+    public Page<Account>  listSortOrder(String sort, String order, int page, int size) {
     	Pageable pageable=null;
     	if(order.equals("asc")) {
     		pageable=PageRequest.of(page, size, Sort.by(sort).ascending());
@@ -30,6 +30,13 @@ public class AccountService {
     		pageable=PageRequest.of(page, size, Sort.by(sort).descending());
     	}
 		return accountRepository.findAll(pageable); 
+        
+    }
+    
+ // Le journal
+    public List<Account>  list() {
+
+		return accountRepository.findAll(); 
         
     }
 	

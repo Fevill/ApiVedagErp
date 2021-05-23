@@ -1,5 +1,6 @@
 package tim.vedagerp.api.services;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class JournalService {
 	JournalRowRepository journalRowRepository; 
 
 	// Le journal
-    public Page<JournalRow> list(String sort, String order, int page, int size) {
+    public Page<JournalRow> listSortOrder(String sort, String order, int page, int size) {
     	Pageable pageable=null;
     	if(order.equals("asc")) {
     		pageable=PageRequest.of(page, size, Sort.by(sort).ascending());
@@ -29,6 +30,13 @@ public class JournalService {
     	}
         return journalRowRepository.findAll(pageable);
     }
+    
+ // Le journal
+    public List<JournalRow> list() {
+
+        return journalRowRepository.findAll();
+    }
+	
 	
 	// Ajouter une écriture comptable
     public JournalRow get(long id) throws NoSuchElementException{
@@ -50,5 +58,9 @@ public class JournalService {
     	journalRowRepository.deleteById(id);
     	return "Success";
     }
+
+	public List<JournalRow> addAll(List<JournalRow> body) {
+		return journalRowRepository.saveAll(body);
+	}
 	
 }

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.Ibalance;
 import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.repositories.JournalRowRepository;
 
@@ -72,6 +73,11 @@ public class JournalService {
 		ledger.setDebit(journalRowRepository.findByDebitId(id));
 		
 		return ledger;
+	}
+
+	public List<Ibalance> getBalance() {
+
+		return journalRowRepository.countTotalCommentsByYear();
 	}
 	
 }

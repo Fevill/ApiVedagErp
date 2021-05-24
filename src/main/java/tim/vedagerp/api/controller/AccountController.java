@@ -66,7 +66,7 @@ public class AccountController {
 
 	@PostMapping()
 	public ResponseEntity<?> postAccount(@RequestBody Account body) {
-		logger.info("postAccount");
+		logger.info("postAccount ");
 		try {
 			Account account = accountService.add(body);
 			return new ResponseEntity<>(account, HttpStatus.OK);

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import tim.vedagerp.api.entities.JournalRow;
 import tim.vedagerp.api.model.Ibalance;
+import tim.vedagerp.api.model.Iresultat;
 import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.repositories.JournalRowRepository;
 
@@ -21,6 +22,8 @@ public class JournalService {
 	
 	@Autowired
 	JournalRowRepository journalRowRepository; 
+	
+	
 
 	// Le journal
     public Page<JournalRow> listSortOrder(String sort, String order, int page, int size) {
@@ -77,7 +80,14 @@ public class JournalService {
 
 	public List<Ibalance> getBalance() {
 
-		return journalRowRepository.countTotalCommentsByYear();
+		return journalRowRepository.getBalance();
+	}
+
+	public List<Iresultat> getResultat(String prime) {
+		if(prime.equals("Charges")) {
+			return journalRowRepository.getResultatCharges();
+		}
+		return journalRowRepository.getResultatProduits();
 	}
 	
 }

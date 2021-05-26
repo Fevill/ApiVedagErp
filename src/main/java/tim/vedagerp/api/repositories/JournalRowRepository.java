@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import tim.vedagerp.api.entities.JournalRow;
 import tim.vedagerp.api.model.Ibalance;
+import tim.vedagerp.api.model.Ibilan;
 import tim.vedagerp.api.model.Iresultat;
 
 public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
@@ -32,5 +33,13 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 	@Query(value = "  SELECT b.number, b.label, cat.*, b.credit - b.debit AS sold   FROM v_balance b"
 			+ "   LEFT JOIN category AS cat ON cat.id = b.category_id  WHERE cat.prime = 'Produits'", nativeQuery = true)
 	List<Iresultat> getResultatProduits();
+	
+	@Query(value = "  SELECT b.number, b.label, cat.*, b.debit - b.credit AS sold   FROM v_balance b"
+			+ "   LEFT JOIN category AS cat ON cat.id = b.category_id  WHERE cat.prime = 'Actif'", nativeQuery = true)
+	List<Ibilan> getBilanActif();
+	
+	@Query(value = "  SELECT b.number, b.label, cat.*, b.credit - b.debit AS sold   FROM v_balance b"
+			+ "   LEFT JOIN category AS cat ON cat.id = b.category_id  WHERE cat.prime = 'Passif'", nativeQuery = true)
+	List<Ibilan> getBilanPassif();
 
 }

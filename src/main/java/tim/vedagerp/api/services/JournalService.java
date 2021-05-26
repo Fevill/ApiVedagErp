@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import tim.vedagerp.api.entities.JournalRow;
 import tim.vedagerp.api.model.Ibalance;
+import tim.vedagerp.api.model.Ibilan;
 import tim.vedagerp.api.model.Iresultat;
 import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.repositories.JournalRowRepository;
@@ -88,6 +89,13 @@ public class JournalService {
 			return journalRowRepository.getResultatCharges();
 		}
 		return journalRowRepository.getResultatProduits();
+	}
+	
+	public List<Ibilan> getBilan(String prime) {
+		if(prime.equals("Actif")) {
+			return journalRowRepository.getBilanActif();
+		}
+		return journalRowRepository.getBilanPassif();
 	}
 	
 }

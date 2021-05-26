@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import tim.vedagerp.api.entities.JournalRow;
 import tim.vedagerp.api.model.Ibalance;
+import tim.vedagerp.api.model.Ibilan;
 import tim.vedagerp.api.model.Iresultat;
 import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.model.Message;
@@ -83,6 +84,19 @@ public class JournalRowController {
 		try {
 			List<Iresultat> resultat = journalService.getResultat(prime);
 			return new ResponseEntity<>(resultat, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
+		}
+	}
+	
+	@GetMapping("/bilan")
+	/*
+	 * prime == Actif ou Passif
+	 */
+	public ResponseEntity<?> getBilan(@RequestParam("prime") String prime) {
+		try {
+			List<Ibilan> bilan = journalService.getBilan(prime);
+			return new ResponseEntity<>(bilan, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
 		}

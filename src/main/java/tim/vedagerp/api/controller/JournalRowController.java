@@ -38,8 +38,13 @@ public class JournalRowController {
 	JournalService journalService;
 
 	@GetMapping()
-	public ResponseEntity<?> getJournal(@RequestParam("sort") String sort,@RequestParam("order") String order,@RequestParam("page") int page,@RequestParam("size") int size) {
-		Page<JournalRow> accounts = journalService.listSortOrder(sort,order,page,size);
+	public ResponseEntity<?> getJournal(
+			@RequestParam("sort") String sort,
+			@RequestParam("order") String order,
+			@RequestParam("page") int page,
+			@RequestParam("size") int size,
+			@RequestParam("id") Long id) {
+		Page<JournalRow> accounts = journalService.listSortOrder(sort,order,page,size,id);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 	
@@ -60,9 +65,9 @@ public class JournalRowController {
 	}
 	
 	@GetMapping("/ledger")
-	public ResponseEntity<?> getJournal(@RequestParam("accountId") Long id) {
+	public ResponseEntity<?> getJournal(@RequestParam("accountId") Long id,@RequestParam("ndId") Long nsId) {
 		try {
-			Ledger ledger = journalService.getLedger(id);
+			Ledger ledger = journalService.getLedger(id,nsId);
 			return new ResponseEntity<>(ledger, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Pas de valeur pour id: " + id, HttpStatus.OK);

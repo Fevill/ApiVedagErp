@@ -20,62 +20,65 @@ import tim.vedagerp.api.repositories.JournalRowRepository;
 
 @Service
 public class JournalService {
-	
+
 	@Autowired
-	JournalRowRepository journalRowRepository; 
-	
-	
+	JournalRowRepository journalRowRepository;
 
 	// Le journal
-    public Page<JournalRow> listSortOrder(String sort, String order, int page, int size) {
-    	Pageable pageable=null;
-    	if(order.equals("asc")) {
-    		pageable=PageRequest.of(page, size, Sort.by(sort).ascending());
-    	}else {
-    		pageable=PageRequest.of(page, size, Sort.by(sort).descending());
-    	}
-        return journalRowRepository.findAll(pageable);
-    }
-    
- // Le journal
-    public List<JournalRow> list() {
+	public Page<JournalRow> listSortOrder(String sort, String order, int page, int size, Long id) {
+		Pageable pageable = null;
+		if (order.equals("asc")) {
+			pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+		} else {
+			pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+		}
+		return journalRowRepository.findAllByNamespaceId(pageable, id);
+	}
 
-        return journalRowRepository.findAll();
-    }
-	
-	
+	// Le journal
+	public List<JournalRow> list() {
+
+		return journalRowRepository.findAll();
+	}
+
+	// Le journal by namespace
+	public List<JournalRow> listByNamespaceId(Long id) {
+
+		return journalRowRepository.findAllByNamespaceId(id);
+	}
+
 	// Ajouter une écriture comptable
-    public JournalRow get(long id) throws NoSuchElementException{
-    	return journalRowRepository.findById(id).get();
-    }
-	
-    // Ajouter une écriture comptable
-    public JournalRow add(JournalRow body) {
-    	return journalRowRepository.saveAndFlush(body);
-    }
-	
-    // Modifier une écriture comptable
-    public JournalRow update(JournalRow body) {
-    	return journalRowRepository.saveAndFlush(body);
-    }
-	
+	public JournalRow get(long id) throws NoSuchElementException {
+		return journalRowRepository.findById(id).get();
+	}
+
+	// Ajouter une écriture comptable
+	public JournalRow add(JournalRow body) {
+		return journalRowRepository.saveAndFlush(body);
+	}
+
+	// Modifier une écriture comptable
+	public JournalRow update(JournalRow body) {
+		return journalRowRepository.saveAndFlush(body);
+	}
+
 	// Supprimer une écriture comptable
-    public String delete(long id) throws EmptyResultDataAccessException{
-    	journalRowRepository.deleteById(id);
-    	return "Success";
-    }
+	public String delete(long id) throws EmptyResultDataAccessException {
+		journalRowRepository.deleteById(id);
+		return "Success";
+	}
 
 	public List<JournalRow> addAll(List<JournalRow> body) {
 		return journalRowRepository.saveAll(body);
 	}
 
 	// Récupération du grand livre
-	public Ledger getLedger(Long id) {
-		
+	public Ledger getLedger(Long id,Long nsId) {
+
 		Ledger ledger = new Ledger();
-		ledger.setCredit(journalRowRepository.findByCreditId(id));
-		ledger.setDebit(journalRowRepository.findByDebitId(id));
-		
+		ledger.setCredit(journalRowRepository.findByCreditIdAndNamespaceId(id,nsId));
+		ledger.setDebit(journalRowRepository.findByDebitIdAndNamespaceId(id,nsId));
+
 		return ledger;
 	}
 
@@ -85,17 +88,17 @@ public class JournalService {
 	}
 
 	public List<Iresultat> getResultat(String prime) {
-		if(prime.equals("Charges")) {
+		if (prime.equals("Charges")) {
 			return journalRowRepository.getResultatCharges();
 		}
 		return journalRowRepository.getResultatProduits();
 	}
-	
+
 	public List<Ibilan> getBilan(String prime) {
-		if(prime.equals("Actif")) {
+		if (prime.equals("Actif")) {
 			return journalRowRepository.getBilanActif();
 		}
 		return journalRowRepository.getBilanPassif();
 	}
-	
+
 }

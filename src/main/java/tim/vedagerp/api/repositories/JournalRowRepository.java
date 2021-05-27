@@ -2,10 +2,13 @@ package tim.vedagerp.api.repositories;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
+import tim.vedagerp.api.entities.Account;
+import tim.vedagerp.api.entities.FiscalYear;
 import tim.vedagerp.api.entities.JournalRow;
 import tim.vedagerp.api.model.Ibalance;
 import tim.vedagerp.api.model.Ibilan;
@@ -13,9 +16,13 @@ import tim.vedagerp.api.model.Iresultat;
 
 public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 
-	List<JournalRow> findByCreditId(Long id);
+	List<JournalRow> findByCreditIdAndNamespaceId(Long cid,Long nid);
 
-	List<JournalRow> findByDebitId(Long id);
+	List<JournalRow> findByDebitIdAndNamespaceId(Long did,Long nid);
+	
+	Page<JournalRow> findAllByNamespaceId(Pageable pageable, Long id);
+
+	List<JournalRow> findAllByNamespaceId(Long id);
 
 	/*
 	 * @Query("SELECT c.label,c.number, SUM(j1.amount) as debit " +

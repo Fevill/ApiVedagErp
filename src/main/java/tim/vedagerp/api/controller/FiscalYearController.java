@@ -22,100 +22,93 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
-
-import tim.vedagerp.api.entities.Account;
+import tim.vedagerp.api.entities.FiscalYear;
 import tim.vedagerp.api.model.Message;
-import tim.vedagerp.api.services.AccountService;
+import tim.vedagerp.api.services.FiscalYearService;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("api/v1/accounts")
-public class AccountController {
+@RequestMapping("api/v1/fiscalyear")
+public class FiscalYearController {
 
 	@Autowired
-	AccountService accountService;
+	FiscalYearService fisalyearService;
 	
-	private static Logger logger = LogManager.getLogger(AccountController.class);
+	private static Logger logger = LogManager.getLogger(FiscalYearController.class);
 
 	@GetMapping()
-	public ResponseEntity<?> getAccount(
-			@RequestParam("sort") String sort,
-			@RequestParam("order") String order,
-			@RequestParam("page") int page,
-			@RequestParam("size") int size,
-			@RequestParam("id") Long id) {
-		logger.info("getAccount");
-		Page<Account> accounts = accountService.listSortOrder(sort,order,page,size,id);
-		return new ResponseEntity<>(accounts, HttpStatus.OK);
+	public ResponseEntity<?> getFiscalYear(@RequestParam("sort") String sort,@RequestParam("order") String order,@RequestParam("page") int page,@RequestParam("size") int size) {
+		logger.info("getFiscalYear");
+		Page<FiscalYear> fiscalYear = fisalyearService.listSortOrder(sort,order,page,size);
+		return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 	}
 	
 
 	@GetMapping("/all")
-	public ResponseEntity<?> getAccountAll() {
-		logger.info("getAccountAll");
-		List<Account> accounts = accountService.list();
-		return new ResponseEntity<>(accounts, HttpStatus.OK);
+	public ResponseEntity<?> getFiscalYearAll() {
+		logger.info("getFiscalYear");
+		List<FiscalYear> fiscalYear = fisalyearService.list();
+		return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 	}
 	
 	@GetMapping("/all/{id}")
-	public ResponseEntity<?> getAccountAll(@PathVariable("id") long id) {
-		logger.info("getAccountAll");
-		List<Account> accounts = accountService.listByNamespaceId(id);
-		return new ResponseEntity<>(accounts, HttpStatus.OK);
+	public ResponseEntity<?> getFiscalYearAll(@PathVariable("id") long id) {
+		logger.info("getFiscalYear");
+		List<FiscalYear> fiscalYear = fisalyearService.listByNamespaceId(id);
+		return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getAccount(@PathVariable("id") long id) {
-		logger.info("getAccount");
+	public ResponseEntity<?> getFiscalYear(@PathVariable("id") long id) {
+		logger.info("getFiscalYear");
 		try {
-			Account account = accountService.get(id);
-			return new ResponseEntity<>(account, HttpStatus.OK);
+			FiscalYear fiscalYear = fisalyearService.get(id);
+			return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>(String.format("Pas de valeur pour id: %d", id), HttpStatus.OK);
 		}
 	}
 
 	@PostMapping()
-	public ResponseEntity<?> postAccount(@RequestBody Account body) {
-		logger.info("postAccount ");
+	public ResponseEntity<?> postFiscalYear(@RequestBody FiscalYear body) {
+		logger.info("postFiscalYear");
 		try {
-			Account account = accountService.add(body);
-			return new ResponseEntity<>(account, HttpStatus.OK);
+			FiscalYear fiscalYear = fisalyearService.add(body);
+			return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 		} catch (HttpMessageNotReadableException ex) {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
 		}
 	}
 	
 	@PostMapping("/all")
-	public ResponseEntity<?> postAccountAll(@RequestBody List<Account> body) {
-		logger.info("postAccountAll");
+	public ResponseEntity<?> postFiscalYearAll(@RequestBody List<FiscalYear> body) {
+		logger.info("postFiscalYearAll");
 		try {
-			List<Account> accounts = accountService.addAll(body);
-			return new ResponseEntity<>(accounts, HttpStatus.OK);
+			List<FiscalYear> fiscalYear = fisalyearService.addAll(body);
+			return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 		} catch (HttpMessageNotReadableException ex) {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
 		}
 	}
 
 	@PutMapping()
-	public ResponseEntity<?> putAccount(@RequestBody Account body) {
-		logger.info("putAccount");
+	public ResponseEntity<?> putFiscalYear(@RequestBody FiscalYear body) {
+		logger.info("putFiscalYear");
 		try {
-			Account account = accountService.update(body);
-			return new ResponseEntity<>(account, HttpStatus.OK);
+			FiscalYear fiscalYear = fisalyearService.update(body);
+			return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 		} catch (HttpMessageNotReadableException ex) {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
 		}
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> delAccount(@PathVariable("id") long id) {
-		logger.info("delAccount");
+	public ResponseEntity<?> delFiscalYear(@PathVariable("id") long id) {
+		logger.info("delFiscalYear");
 
 		try {
 			Message res = new Message();
-			res.setText(accountService.delete(id));
+			res.setText(fisalyearService.delete(id));
 			return new ResponseEntity<>(res, HttpStatus.OK);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ResponseEntity<>(String.format("Id %d n'existe pas.", id), HttpStatus.OK);

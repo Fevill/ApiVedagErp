@@ -8,21 +8,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "category", uniqueConstraints = @UniqueConstraint(columnNames = { "prime", "second" }))
-public class Category {
+@Table(name = "fiscalyear")
+public class FiscalYear {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Long id;
 	
 	@Column(nullable = false)
-	private String prime;
-	
-	@Column(nullable = false)
-	private String second;
+	private String year;
 	
 	@ManyToOne
     @JoinColumn(name="namespace_id")
@@ -36,27 +32,22 @@ public class Category {
 		this.id = id;
 	}
 
-	public String getPrime() {
-		return prime;
+	public String getYear() {
+		return year;
 	}
 
-	public void setPrime(String prime) {
-		this.prime = prime;
+	public void setYear(String year) {
+		this.year = year;
 	}
 
-	public String getSecond() {
-		return second;
+	public NameSpace getNamespace() {
+		return namespace;
 	}
 
-	public void setSecond(String second) {
-		this.second = second;
-	}
-
-	@Override
-	public String toString() {
-		return "Category [id=" + id + ", prime=" + prime + ", second=" + second + "]";
+	public void setNamespace(NameSpace namespace) {
+		this.namespace = namespace;
 	}
 	
 	
-
+	
 }

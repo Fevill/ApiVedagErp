@@ -1,5 +1,9 @@
 package tim.vedagerp.api.services;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,16 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import tim.vedagerp.api.controller.AccountController;
 import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.entities.Category;
 import tim.vedagerp.api.repositories.AccountRepository;
 import tim.vedagerp.api.repositories.CategoryRepository;
-
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
-
-import static java.util.Comparator.comparing;
 
 @Service
 public class AccountService {
@@ -40,22 +38,26 @@ public class AccountService {
 	private static Logger logger = LogManager.getLogger(AccountService.class);
 
 	// Le journal
-	public Page<Account> listSortOrder(String sort, String order, int page, int size) {
+	public Page<Account> listSortOrder(String sort, String order, int page, int size,Long id) {
 		Pageable pageable = null;
 		if (order.equals("asc")) {
 			pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
 		} else {
 			pageable = PageRequest.of(page, size, Sort.by(sort).descending());
 		}
-		return accountRepository.findAll(pageable);
+
+		return accountRepository.findAllByNamespaceId(pageable,id);
 
 	}
 
 	// Le journal
+	public List<Account> listByNamespaceId(long id) {
+		return accountRepository.findAllByNamespaceId(id);
+	}
+	
+	// Le journal
 	public List<Account> list() {
-
 		return accountRepository.findAll();
-
 	}
 
 	// Ajouter une écriture comptable
@@ -119,5 +121,7 @@ public class AccountService {
 		return categories;
 
 	}
+
+
 
 }

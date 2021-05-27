@@ -27,6 +27,10 @@ public class JournalRow {
     @JoinColumn(name="credit_id")
 	private Account credit;
 	
+	@ManyToOne
+    @JoinColumn(name="namespace_id")
+	private NameSpace namespace;
+	
 	private float amount;
 	
 	public Long getId() {
@@ -66,6 +70,12 @@ public class JournalRow {
 		this.amount = amount;
 	}
 	
+	public NameSpace getNamespace() {
+		return namespace;
+	}
+	public void setNamespace(NameSpace namespace) {
+		this.namespace = namespace;
+	}
 	@Override
 	public String toString() {
 		return "JournalRow [id=" + id + ", dateOperation=" + dateOperation + ", label=" + label + ", credit=" + credit

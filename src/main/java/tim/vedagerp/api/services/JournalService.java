@@ -1,5 +1,11 @@
 package tim.vedagerp.api.services;
 
+
+
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -25,14 +31,16 @@ public class JournalService {
 	JournalRowRepository journalRowRepository;
 
 	// Le journal
-	public Page<JournalRow> listSortOrder(String sort, String order, int page, int size, Long id) {
+	public Page<JournalRow> listSortOrder(String sort, String order, int page, int size,String fy, Long id) {
 		Pageable pageable = null;
 		if (order.equals("asc")) {
 			pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
 		} else {
 			pageable = PageRequest.of(page, size, Sort.by(sort).descending());
 		}
-		return journalRowRepository.findAllByNamespaceId(pageable, id);
+		Date start = parseDate(fy+"-01-01");
+		Date end = parseDate(fy+"-12-31");
+		return journalRowRepository.findAllByNamespaceIdAndDateOperationBetween(pageable, id,start,end);
 	}
 
 	// Le journal
@@ -73,32 +81,54 @@ public class JournalService {
 	}
 
 	// Récupération du grand livre
-	public Ledger getLedger(Long id,Long nsId) {
+	public Ledger getLedger(Long id,String fy,Long nsId) {
 
 		Ledger ledger = new Ledger();
-		ledger.setCredit(journalRowRepository.findByCreditIdAndNamespaceId(id,nsId));
-		ledger.setDebit(journalRowRepository.findByDebitIdAndNamespaceId(id,nsId));
+		Date start = parseDate(fy+"-01-01");
+		Date end = parseDate(fy+"-12-31");
+		ledger.setCredit(journalRowRepository.findByCreditIdAndNamespaceIdAndDateOperationBetween(id,nsId,start,end));
+		ledger.setDebit(journalRowRepository.findByDebitIdAndNamespaceIdAndDateOperationBetween(id,nsId,start,end));
 
 		return ledger;
 	}
 
-	public List<Ibalance> getBalance() {
 
-		return journalRowRepository.getBalance();
-	}
 
-	public List<Iresultat> getResultat(String prime) {
+	public List<Iresultat> getResultat(String prime,String fy,Long nsId) {
+		Date start = parseDate(fy+"-01-01");
+		Date end = parseDate(fy+"-12-31");
 		if (prime.equals("Charges")) {
-			return journalRowRepository.getResultatCharges();
+			return journalRowRepository.getResultatCharges(nsId,start,end);
 		}
-		return journalRowRepository.getResultatProduits();
+		return journalRowRepository.getResultatProduits(nsId,start,end);
 	}
 
-	public List<Ibilan> getBilan(String prime) {
-		if (prime.equals("Actif")) {
-			return journalRowRepository.getBilanActif();
+	public List<Ibilan> getBilan(String prime,String opt,String fy,Long nsId) {
+		Date start = parseDate(fy+"-01-01");
+		Date end = parseDate(fy+"-12-31");
+		if(opt.equals("I")) {
+		     end = parseDate(fy+"-01-01");
 		}
-		return journalRowRepository.getBilanPassif();
+		if (prime.equals("Actif")) {
+			return journalRowRepository.getBilanActif(nsId,start,end);
+		}
+		return journalRowRepository.getBilanPassif(nsId,start,end);
+	}
+	
+	 public static Date parseDate(String date) {
+	     try {
+	         return (Date) new SimpleDateFormat("yyyy-MM-dd").parse(date);
+	     } catch (ParseException e) {
+	         return null;
+	     }
+	  }
+
+	 
+
+	public List<Ibalance> getBalance(String fy, Long nsId) {
+		Date start = parseDate(fy+"-01-01");
+		Date end = parseDate(fy+"-12-31");
+		return journalRowRepository.getBalance(nsId,start,end);
 	}
 
 }

@@ -2,6 +2,7 @@ package tim.vedagerp.api.entities;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -18,7 +19,10 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Long id;
+	@Column(unique=true)
 	private String label;
+	
+	@Column(unique=true)
 	private	String	number;
 	
 	@ManyToOne()
@@ -35,7 +39,16 @@ public class Account {
     @JoinColumn(name="namespace_id")
 	private NameSpace namespace;
 	
+	@ManyToOne()
+    @JoinColumn(name="account_id")
+	private	Account account;
 	
+	public Account getAccount() {
+		return account;
+	}
+	public void setAccount(Account account) {
+		this.account = account;
+	}
 	public Long getId() {
 		return id;
 	}

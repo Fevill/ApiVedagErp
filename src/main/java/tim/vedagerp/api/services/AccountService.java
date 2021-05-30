@@ -74,6 +74,7 @@ public class AccountService {
 	public List<Account> addAll(List<Account> body) {
 		
 		List<Category> categories = this.delDoublon(body);
+		List<Account> res = new ArrayList<Account>();
 		for(Account acc : body) {
 			for(Category c : categories) {
 				if(acc.getCategory().getPrime().equals(c.getPrime()) && 
@@ -82,7 +83,13 @@ public class AccountService {
 				}
 			}
 		}
-		return accountRepository.saveAll(body);
+		try {
+			res = accountRepository.saveAll(body);
+		}catch(Exception ex) {
+			logger.error("********************************************"+ex.getMessage());
+		}
+		return res;
+		//return new ArrayList<Account>();
 	}
 
 	// Modifier une écriture comptable
@@ -100,25 +107,58 @@ public class AccountService {
 	private List<Category> delDoublon(List<Account> body) {
 
 		Set<Category> set = new HashSet<Category>();
-		List<Category> categories = new ArrayList<Category>();
+		List<Category> categoriesInit = new ArrayList<Category>();
+		List<Category> categoriesFinal = new ArrayList<Category>();
+		Boolean catExist;
 
 		for (Account acc : body) {
-			set.add(acc.getCategory());
+			categoriesInit.add(acc.getCategory());
 		}
-		List<Category> unique = set.stream()
-				.collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparing(Category::getSecond, (s1, s2) -> {
-					return s2.compareTo(s1);
-				}))), ArrayList::new));
 		
-		
+		for (Category cat : categoriesInit) {
+			catExist = false;
+			for (Category catu : categoriesFinal) {
+				if(cat.getPrime().equals(catu.getPrime())&&cat.getSecond().equals(catu.getSecond())) {
+					catExist=true;
+					break;
+				}else {
+					catExist = false;
+				}
+			}
+			if(!catExist) {
+				categoriesFinal.add(cat);
+			}
+		}
+		/* 
+		Ti : tableau initial
+		Tf : tableau sans doublons
+		k : nombre d'entier sans doublons
+		 
+		Tf[1] = Ti[1];
+		 
+		pour i allant de 2 à N faire
+		 
+		     -- On regarde si on a pas déjà ajouté l'entier
+		     pour j allant de 1 à k faire
+		          si Ti[i] == Tf[j] alors
+		               passer au i suivant
+		          fin si
+		     fin pour
+		 
+		     -- Si on est ici alors c'est que ce n'est pas un doublon
+		     Tf[k] := Ti[i]
+		     k <- k + 1
+		fin pour
+		*/
+			
 		try {
-			categories = categoryRepository.saveAll(unique);
+			categoriesFinal = categoryRepository.saveAll(categoriesFinal);
 		}catch(Exception ex) {
 			logger.error("Error : "+ex.getMessage());
 		}
 		
-		categories = categoryRepository.findAll();
-		return categories;
+		categoriesFinal = categoryRepository.findAll();
+		return categoriesFinal;
 
 	}
 

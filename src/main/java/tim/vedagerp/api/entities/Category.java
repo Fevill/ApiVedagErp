@@ -27,6 +27,14 @@ public class Category {
 	@ManyToOne
     @JoinColumn(name="namespace_id")
 	private NameSpace namespace;
+	
+	public NameSpace getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(NameSpace namespace) {
+		this.namespace = namespace;
+	}
 
 	public Long getId() {
 		return id;

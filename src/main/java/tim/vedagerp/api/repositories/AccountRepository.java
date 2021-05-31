@@ -11,6 +11,10 @@ import tim.vedagerp.api.entities.Account;
 public interface AccountRepository extends JpaRepository<Account, Long>{
 
 	Page<Account> findAllByNamespaceId(Pageable pageable, Long id);
+	
+	Page<Account> findAllByNamespaceIdAndAccountIsNull(Pageable pageable, Long id);
+	
+	Page<Account> findAllByNamespaceIdAndAccountIsNotNull(Pageable pageable, Long id);
 
 	List<Account> findAllByNamespaceId(Long id);
 	

@@ -44,9 +44,10 @@ public class AccountController {
 			@RequestParam("order") String order,
 			@RequestParam("page") int page,
 			@RequestParam("size") int size,
-			@RequestParam("id") Long id) {
+			@RequestParam("id") Long id,
+			@RequestParam("option") String option) {
 		logger.info("getAccount");
-		Page<Account> accounts = accountService.listSortOrder(sort,order,page,size,id);
+		Page<Account> accounts = accountService.listSortOrder(sort,order,page,size,id,option);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 	

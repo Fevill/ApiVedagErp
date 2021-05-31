@@ -1,15 +1,10 @@
 package tim.vedagerp.api.services;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,15 +33,23 @@ public class AccountService {
 	private static Logger logger = LogManager.getLogger(AccountService.class);
 
 	// Le journal
-	public Page<Account> listSortOrder(String sort, String order, int page, int size,Long id) {
+	public Page<Account> listSortOrder(String sort, String order, int page, int size,Long id,String option) {
 		Pageable pageable = null;
 		if (order.equals("asc")) {
 			pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
 		} else {
 			pageable = PageRequest.of(page, size, Sort.by(sort).descending());
 		}
+		
+		logger.info(option);
+		
+		if(option.equals("sub")) {
+			return accountRepository. findAllByNamespaceIdAndAccountIsNotNull(pageable,id);
+		}else {
+			return accountRepository. findAllByNamespaceIdAndAccountIsNull(pageable,id);
+		}
 
-		return accountRepository.findAllByNamespaceId(pageable,id);
+		
 
 	}
 

@@ -27,7 +27,7 @@ import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.services.FiscalYearService;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("api/v1/fiscalyear")
 public class FiscalYearController {
 

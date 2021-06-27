@@ -29,7 +29,7 @@ import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.services.JournalService;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("api/v1/journal")
 public class JournalRowController {
 

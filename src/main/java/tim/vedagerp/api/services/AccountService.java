@@ -32,8 +32,8 @@ public class AccountService {
 
 	private static Logger logger = LogManager.getLogger(AccountService.class);
 
-	// Le journal
-	public Page<Account> listSortOrder(String sort, String order, int page, int size,Long id,String option) {
+	// Liste des comptes
+	public Page<Account> listSortOrder(String sort, String order, int page, int size,Long id,String query,String option) {
 		Pageable pageable = null;
 		if (order.equals("asc")) {
 			pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
@@ -44,18 +44,20 @@ public class AccountService {
 		logger.info(option);
 		
 		if(option.equals("sub")) {
-			return accountRepository. findAllByNamespaceIdAndAccountIsNotNull(pageable,id);
+			return accountRepository.findByQueryNamespaceIdAccountIsNotNull(id,query,pageable);
 		}else {
-			return accountRepository. findAllByNamespaceIdAndAccountIsNull(pageable,id);
-		}
-
-		
+			return accountRepository.findByQueryNamespaceIdAccountIsNull(id,query,pageable);
+		}	
 
 	}
 
-	// Le journal
-	public List<Account> listByNamespaceId(long id) {
-		return accountRepository.findAllByNamespaceId(id);
+	// Liste des comptes selon id de l'espace de travail
+	public List<Account> listByNamespaceId(long id,String option) {
+		if(option.equals("sub")) {
+			return accountRepository. findAllByNamespaceIdAndAccountIsNotNull(id);
+		}else {
+			return accountRepository. findAllByNamespaceIdAndAccountIsNull(id);
+		}	
 	}
 	
 	// Le journal
@@ -132,28 +134,6 @@ public class AccountService {
 				categoriesFinal.add(cat);
 			}
 		}
-		/* 
-		Ti : tableau initial
-		Tf : tableau sans doublons
-		k : nombre d'entier sans doublons
-		 
-		Tf[1] = Ti[1];
-		 
-		pour i allant de 2 à N faire
-		 
-		     -- On regarde si on a pas déjà ajouté l'entier
-		     pour j allant de 1 à k faire
-		          si Ti[i] == Tf[j] alors
-		               passer au i suivant
-		          fin si
-		     fin pour
-		 
-		     -- Si on est ici alors c'est que ce n'est pas un doublon
-		     Tf[k] := Ti[i]
-		     k <- k + 1
-		fin pour
-		*/
-			
 		try {
 			categoriesFinal = categoryRepository.saveAll(categoriesFinal);
 		}catch(Exception ex) {
@@ -164,6 +144,10 @@ public class AccountService {
 		return categoriesFinal;
 
 	}
+
+    public List<Account> listRef(long id) {
+		return accountRepository.findAllByNamespaceIdAndAccountIsNull(id);
+    }
 
 
 

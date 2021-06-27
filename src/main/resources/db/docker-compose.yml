@@ -1,0 +1,14 @@
+version: "3.3"
+services:
+  vdg-postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: c0S6nnPQcFds8SBJcutE
+      POSTGRES_USER: vdg
+      POSTGRES_DB: vdg.db.dev
+    ports:
+      - "6001:5432"
+    volumes:
+      - ./vdg.db.dev:/var/lib/postgresql
+

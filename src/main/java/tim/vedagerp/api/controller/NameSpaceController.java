@@ -27,7 +27,7 @@ import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.services.NameSpaceService;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("api/v1/ns")
 public class NameSpaceController {
 
@@ -37,9 +37,14 @@ public class NameSpaceController {
 	private static Logger logger = LogManager.getLogger(NameSpaceController.class);
 
 	@GetMapping()
-	public ResponseEntity<?> getNameSpace(@RequestParam("sort") String sort,@RequestParam("order") String order,@RequestParam("page") int page,@RequestParam("size") int size) {
+	public ResponseEntity<?> getNameSpace(
+		@RequestParam("sort") String sort,
+		@RequestParam("order") String order,
+		@RequestParam("page") int page,
+		@RequestParam("size") int size,
+		@RequestParam("query") String query ) {
 		logger.info("getNameSpace");
-		Page<NameSpace> namespace = nameSpaceService.listSortOrder(sort,order,page,size);
+		Page<NameSpace> namespace = nameSpaceService.listSortOrder(sort,order,page,size,query);
 		return new ResponseEntity<>(namespace, HttpStatus.OK);
 	}
 	

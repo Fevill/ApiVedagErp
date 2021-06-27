@@ -21,14 +21,14 @@ public class NameSpaceService {
 	NameSpaceRepository nameSpaceRepository;
 
 	// Liste des espaces de nom
-	public Page<NameSpace> listSortOrder(String sort, String order, int page, int size) {
+	public Page<NameSpace> listSortOrder(String sort, String order, int page, int size,String query) {
 		Pageable pageable = null;
 		if (order.equals("asc")) {
 			pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
 		} else {
 			pageable = PageRequest.of(page, size, Sort.by(sort).descending());
 		}
-		return nameSpaceRepository.findAll(pageable);
+		return nameSpaceRepository.findAllByNameContainsOrDescriptionContains(query,query,pageable);
 	}
 
 	// Liste des espaces de nom

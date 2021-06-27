@@ -11,9 +11,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "accounts")
+@Table(
+name = "accounts",
+uniqueConstraints=
+@UniqueConstraint(columnNames={
+	"label", "number","namespace_id"
+}))
 public class Account {
 
 	@Id

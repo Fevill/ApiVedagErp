@@ -29,7 +29,7 @@ import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.services.AccountService;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("api/v1/accounts")
 public class AccountController {
 
@@ -45,9 +45,10 @@ public class AccountController {
 			@RequestParam("page") int page,
 			@RequestParam("size") int size,
 			@RequestParam("id") Long id,
+			@RequestParam("query") String query,
 			@RequestParam("option") String option) {
 		logger.info("getAccount");
-		Page<Account> accounts = accountService.listSortOrder(sort,order,page,size,id,option);
+		Page<Account> accounts = accountService.listSortOrder(sort,order,page,size,id, query,option);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 	
@@ -58,11 +59,18 @@ public class AccountController {
 		List<Account> accounts = accountService.list();
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
+
+	@GetMapping("/all-ref")
+	public ResponseEntity<?> getAccountAllRef(@RequestParam("nsId") Long id) {
+		logger.info("getAccountAll - Ref");
+		List<Account> accounts = accountService.listRef(id);
+		return new ResponseEntity<>(accounts, HttpStatus.OK);
+	}
 	
 	@GetMapping("/all/{id}")
-	public ResponseEntity<?> getAccountAll(@PathVariable("id") long id) {
+	public ResponseEntity<?> getAccountAll(@PathVariable("id") long id,@RequestParam("option") String option) {
 		logger.info("getAccountAll");
-		List<Account> accounts = accountService.listByNamespaceId(id);
+		List<Account> accounts = accountService.listByNamespaceId(id,option);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 

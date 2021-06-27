@@ -1,4 +1,4 @@
- SELECT c.number,
+SELECT c.number,
     c.label,
     c.namespace_id,
     j1.date_operation,

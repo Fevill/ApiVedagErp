@@ -1,4 +1,4 @@
 # Vedagerp
 
-mvn clean package -Pprod
-mvn clean package -Pdev
+- mvnw clean package -Pprod -Dmaven.test.skip=true
+- mvnw clean package -Pdev

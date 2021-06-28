@@ -37,13 +37,18 @@ public class FiscalYearController {
 	private static Logger logger = LogManager.getLogger(FiscalYearController.class);
 
 	@GetMapping()
-	public ResponseEntity<?> getFiscalYear(@RequestParam("sort") String sort,@RequestParam("order") String order,@RequestParam("page") int page,@RequestParam("size") int size) {
+	public ResponseEntity<?> getFiscalYear(
+		@RequestParam("sort") String sort,
+		@RequestParam("order") String order,
+		@RequestParam("page") int page,
+		@RequestParam("size") int size,
+		@RequestParam("id") Long id,
+		@RequestParam("query") String query) {
 		logger.info("getFiscalYear");
 		Page<FiscalYear> fiscalYear = fisalyearService.listSortOrder(sort,order,page,size);
 		return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 	}
 	
-
 	@GetMapping("/all")
 	public ResponseEntity<?> getFiscalYearAll() {
 		logger.info("getFiscalYear");

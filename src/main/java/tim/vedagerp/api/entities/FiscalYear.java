@@ -1,5 +1,7 @@
 package tim.vedagerp.api.entities;
 
+import java.sql.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,7 +20,13 @@ public class FiscalYear {
 	private Long id;
 	
 	@Column(nullable = false)
-	private String year;
+	private String name;
+
+	@Column(nullable = false)
+	private Date startDate;
+
+	@Column(nullable = false)
+	private Date endDate;
 	
 	@ManyToOne
     @JoinColumn(name="namespace_id")
@@ -28,17 +36,34 @@ public class FiscalYear {
 		return id;
 	}
 
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public String getYear() {
-		return year;
-	}
-
-	public void setYear(String year) {
-		this.year = year;
-	}
 
 	public NameSpace getNamespace() {
 		return namespace;

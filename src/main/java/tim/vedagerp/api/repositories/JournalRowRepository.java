@@ -25,6 +25,14 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 	List<JournalRow> findAllByNamespaceId(Long id);
 
 	/*
+	 * Recherche journal par mois en fonction de l'espace de travail et de
+	 * l'exercice fiscal
+	 */
+	@Query(value = "SELECT * FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND EXTRACT(MONTH FROM date_operation) = :month ORDER BY date_operation", nativeQuery = true)
+	List<JournalRow> getJournalByNsidFyidMonth(@Param("nsid") Long nsId, @Param("start") Date start,
+			@Param("end") Date end, @Param("month") int month);
+
+	/*
 	 * @Query("SELECT c.label,c.number, SUM(j1.amount) as debit " +
 	 * "FROM accounts AS c LEFT JOIN journal AS j1  ON j1.debit.id =c.id")
 	 * List<Object[]> countTotalCommentsByYear();
@@ -40,32 +48,28 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 	 */
 
 	@Query(value = "SELECT b.number, b.category_id,  b.label, SUM(b.debit-b.credit) AS sold, cat.id , cat.prime , cat.second \r\n"
-			+ "FROM v_balance b \r\n"
-			+ "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
+			+ "FROM v_balance b \r\n" + "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
 			+ "WHERE b.namespace_id=:nsid AND cat.prime = 'Charges' AND  b.date_operation \r\n"
 			+ "BETWEEN :start AND :end\r\n"
 			+ "GROUP BY b.number, b.category_id,b.label,  cat.id , cat.prime , cat.second", nativeQuery = true)
 	List<Iresultat> getResultatCharges(@Param("nsid") Long nsId, @Param("start") Date start, @Param("end") Date end);
 
 	@Query(value = "SELECT b.number, b.category_id,  b.label, SUM(b.credit-b.debit) AS sold, cat.id , cat.prime , cat.second \r\n"
-			+ "FROM v_balance b \r\n"
-			+ "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
+			+ "FROM v_balance b \r\n" + "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
 			+ "WHERE b.namespace_id=:nsid AND cat.prime = 'Produits' AND  b.date_operation \r\n"
 			+ "BETWEEN :start AND :end\r\n"
 			+ "GROUP BY b.number, b.category_id,b.label,  cat.id , cat.prime , cat.second", nativeQuery = true)
 	List<Iresultat> getResultatProduits(@Param("nsid") Long nsId, @Param("start") Date start, @Param("end") Date end);
 
 	@Query(value = "SELECT b.number, b.category_id,  b.label, SUM(b.debit-b.credit) AS sold, cat.id , cat.prime , cat.second \r\n"
-			+ "FROM v_balance b \r\n"
-			+ "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
+			+ "FROM v_balance b \r\n" + "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
 			+ "WHERE b.namespace_id=:nsid AND cat.prime = 'Actif' AND  b.date_operation \r\n"
 			+ "BETWEEN :start AND :end\r\n"
 			+ "GROUP BY b.number, b.category_id,b.label,  cat.id , cat.prime , cat.second", nativeQuery = true)
 	List<Ibilan> getBilanActif(@Param("nsid") Long nsId, @Param("start") Date start, @Param("end") Date end);
 
 	@Query(value = "SELECT b.number, b.category_id,  b.label, SUM(b.credit-b.debit) AS sold, cat.id , cat.prime , cat.second \r\n"
-			+ "FROM v_balance b \r\n"
-			+ "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
+			+ "FROM v_balance b \r\n" + "LEFT JOIN category AS cat ON cat.id = b.category_id \r\n"
 			+ "WHERE b.namespace_id=:nsid AND cat.prime = 'Passif' AND  b.date_operation \r\n"
 			+ "BETWEEN :start AND :end\r\n"
 			+ "GROUP BY b.number, b.category_id,b.label,  cat.id , cat.prime , cat.second", nativeQuery = true)

@@ -48,6 +48,17 @@ public class JournalRowController {
 
 	}
 
+	@GetMapping("/month")
+	public ResponseEntity<?> getJournalByMonth(@RequestParam("month") int month, @RequestParam("fyId") Long fyId,
+			@RequestParam("nsId") Long nsId) {
+		// Page<JournalRow> accounts =
+		// journalService.listSortOrder(sort,order,page,size,fy,id);
+
+		List<JournalRow> accounts = journalService.listByMonth(month, fyId, nsId);
+		return new ResponseEntity<>(accounts, HttpStatus.OK);
+
+	}
+
 	@GetMapping("/all")
 	public ResponseEntity<?> getJournal() {
 		List<JournalRow> accounts = journalService.list();

@@ -137,4 +137,14 @@ public class JournalService {
 		return journalRowRepository.getBalance(nsId, start, end);
 	}
 
+    public List<JournalRow> listByMonth(int month, Long fyId, Long nsId) {
+
+        Date start = new Date();
+		Date end = new Date();
+		start = fiscalYearRepository.findById(fyId).get().getStartDate();
+		end = fiscalYearRepository.findById(fyId).get().getEndDate();
+		month = month+ 1;
+		return journalRowRepository.getJournalByNsidFyidMonth(nsId, start, end,month);
+    }
+
 }

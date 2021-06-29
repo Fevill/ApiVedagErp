@@ -18,7 +18,7 @@ public class FiscalYear {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Long id;
-	
+
 	@Column(nullable = false)
 	private String name;
 
@@ -27,9 +27,9 @@ public class FiscalYear {
 
 	@Column(nullable = false)
 	private Date endDate;
-	
+
 	@ManyToOne
-    @JoinColumn(name="namespace_id")
+	@JoinColumn(name = "namespace_id")
 	private NameSpace namespace;
 
 	public Long getId() {
@@ -64,7 +64,6 @@ public class FiscalYear {
 		this.id = id;
 	}
 
-
 	public NameSpace getNamespace() {
 		return namespace;
 	}
@@ -72,7 +71,11 @@ public class FiscalYear {
 	public void setNamespace(NameSpace namespace) {
 		this.namespace = namespace;
 	}
-	
-	
-	
+
+	@Override
+	public String toString() {
+		return "FiscalYear [endDate=" + endDate + ", id=" + id + ", name=" + name + ", namespace=" + namespace
+				+ ", startDate=" + startDate + "]";
+	}
+
 }

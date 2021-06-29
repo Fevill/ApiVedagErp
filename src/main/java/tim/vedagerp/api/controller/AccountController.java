@@ -66,6 +66,14 @@ public class AccountController {
 		List<Account> accounts = accountService.listRef(id);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
+
+	@GetMapping("/all-sub")
+	public ResponseEntity<?> getAccountAllSub(@RequestParam("nsId") Long id) {
+		logger.info("getAccountAll - Sub");
+		List<Account> accounts = accountService.listSub(id);
+		return new ResponseEntity<>(accounts, HttpStatus.OK);
+	}
+	
 	
 	@GetMapping("/all/{id}")
 	public ResponseEntity<?> getAccountAll(@PathVariable("id") long id,@RequestParam("option") String option) {

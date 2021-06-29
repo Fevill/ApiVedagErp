@@ -38,12 +38,14 @@ public class JournalRowController {
 
 	@GetMapping()
 	public ResponseEntity<?> getJournal(@RequestParam("sort") String sort, @RequestParam("order") String order,
-			@RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("fiscalyear") String fy,
-			@RequestParam("id") Long id) {
+			@RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("fyId") Long fyId,
+			@RequestParam("nsId") Long nsId) {
 		// Page<JournalRow> accounts =
 		// journalService.listSortOrder(sort,order,page,size,fy,id);
-		Page<JournalRow> accounts = journalService.listSortOrder(sort, order, page, size, fy, id);
+
+		Page<JournalRow> accounts = journalService.listSortOrder(sort, order, page, size, fyId, nsId);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
+
 	}
 
 	@GetMapping("/all")
@@ -84,9 +86,10 @@ public class JournalRowController {
 	}
 
 	@GetMapping("/resultat")
-	public ResponseEntity<?> getResultat(@RequestParam("prime") String prime,@RequestParam("fiscalyear") String fy, @RequestParam("ndId") Long nsId) {
+	public ResponseEntity<?> getResultat(@RequestParam("prime") String prime, @RequestParam("fiscalyear") String fy,
+			@RequestParam("ndId") Long nsId) {
 		try {
-			List<Iresultat> resultat = journalService.getResultat(prime,fy, nsId);
+			List<Iresultat> resultat = journalService.getResultat(prime, fy, nsId);
 			return new ResponseEntity<>(resultat, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
@@ -97,9 +100,10 @@ public class JournalRowController {
 	/*
 	 * prime == Actif ou Passif
 	 */
-	public ResponseEntity<?> getBilan(@RequestParam("opt") String opt ,@RequestParam("prime") String prime,@RequestParam("fiscalyear") String fy, @RequestParam("ndId") Long nsId) {
+	public ResponseEntity<?> getBilan(@RequestParam("opt") String opt, @RequestParam("prime") String prime,
+			@RequestParam("fiscalyear") String fy, @RequestParam("ndId") Long nsId) {
 		try {
-			List<Ibilan> bilan = journalService.getBilan(prime,opt,fy, nsId);
+			List<Ibilan> bilan = journalService.getBilan(prime, opt, fy, nsId);
 			return new ResponseEntity<>(bilan, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);

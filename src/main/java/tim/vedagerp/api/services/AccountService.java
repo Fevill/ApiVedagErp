@@ -145,8 +145,22 @@ public class AccountService {
 
 	}
 
+	/**
+	 * Récupération de tous les comptes de réferences 
+	 * @param id
+	 * @return
+	 */
     public List<Account> listRef(long id) {
 		return accountRepository.findAllByNamespaceIdAndAccountIsNull(id);
+    }
+
+	/**
+	 * Récuperation de tous les sous comptes
+	 * @param id
+	 * @return
+	 */
+	public List<Account> listSub(long id) {
+		return accountRepository.findAllByNamespaceIdAndAccountIsNotNull(id);
     }
 
 

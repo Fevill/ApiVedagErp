@@ -45,7 +45,7 @@ public class FiscalYearController {
 		@RequestParam("id") Long id,
 		@RequestParam("query") String query) {
 		logger.info("getFiscalYear");
-		Page<FiscalYear> fiscalYear = fisalyearService.listSortOrder(sort,order,page,size);
+		Page<FiscalYear> fiscalYear = fisalyearService.listSortOrder(sort,order,page,size,id,query);
 		return new ResponseEntity<>(fiscalYear, HttpStatus.OK);
 	}
 	

@@ -21,14 +21,15 @@ public class FiscalYearService {
 	FiscalYearRepository fiscalyearRepository;
 
 	// Liste des années fiscales
-	public Page<FiscalYear> listSortOrder(String sort, String order, int page, int size) {
+	// Recherche sur le nom de l'exercices*/
+	public Page<FiscalYear> listSortOrder(String sort, String order, int page, int size,Long id,String query) {
 		Pageable pageable = null;
 		if (order.equals("asc")) {
 			pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
 		} else {
 			pageable = PageRequest.of(page, size, Sort.by(sort).descending());
 		}
-		return fiscalyearRepository.findAll(pageable);
+		return fiscalyearRepository.findAllByNamespaceIdAndNameContains(pageable,id,query);
 	}
 
 	// Liste des années fiscales

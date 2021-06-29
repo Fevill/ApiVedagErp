@@ -76,13 +76,14 @@ public class JournalRowController {
 	}
 
 	@GetMapping("/ledger")
-	public ResponseEntity<?> getJournal(@RequestParam("accountId") Long id, @RequestParam("fiscalyear") String fy,
-			@RequestParam("ndId") Long nsId) {
+	public ResponseEntity<?> getJournal(@RequestParam("subAccountId") Long subAccountId, @RequestParam("fyId") Long fyId,
+			@RequestParam("nsId") Long nsId) {
 		try {
-			Ledger ledger = journalService.getLedger(id, fy, nsId);
+			Ledger ledger =  new Ledger();
+			ledger.setSolde(journalService.getSoldeByNsidFyid(nsId, fyId, subAccountId));
 			return new ResponseEntity<>(ledger, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
-			return new ResponseEntity<>("Pas de valeur pour id: " + id, HttpStatus.OK);
+			return new ResponseEntity<>("Pas de valeur pour id: " + nsId, HttpStatus.OK);
 		}
 	}
 

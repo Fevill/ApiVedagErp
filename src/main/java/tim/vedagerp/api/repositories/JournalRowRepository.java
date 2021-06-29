@@ -28,7 +28,7 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 	 * Recherche journal par mois en fonction de l'espace de travail et de
 	 * l'exercice fiscal
 	 */
-	@Query(value = "SELECT * FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND EXTRACT(MONTH FROM date_operation) = :month ORDER BY date_operation", nativeQuery = true)
+	@Query(value = "SELECT * FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND EXTRACT(MONTH FROM date_operation) = :month ORDER BY date_operation DESC", nativeQuery = true)
 	List<JournalRow> getJournalByNsidFyidMonth(@Param("nsid") Long nsId, @Param("start") Date start,
 			@Param("end") Date end, @Param("month") int month);
 
@@ -75,4 +75,17 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 			+ "GROUP BY b.number, b.category_id,b.label,  cat.id , cat.prime , cat.second", nativeQuery = true)
 	List<Ibilan> getBilanPassif(@Param("nsid") Long nsId, @Param("start") Date start, @Param("end") Date end);
 
+	/**
+	 * Solde credit d'un sous comptes
+	 */
+	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND credit_id=:subAccountId", nativeQuery = true)
+	float getSoldeCreditByNsidFyid(@Param("nsid") Long nsId, @Param("subAccountId") Long subAccountId,
+			@Param("start") Date start, @Param("end") Date end);
+
+	/**
+	 * Solde debit d'un sous comptes
+	 */
+	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND debit_id=:subAccountId", nativeQuery = true)
+	float getSoldeDebitByNsidFyid(@Param("nsid") Long nsId, @Param("subAccountId") Long subAccountId,
+			@Param("start") Date start, @Param("end") Date end);
 }

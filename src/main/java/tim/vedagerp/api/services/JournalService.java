@@ -1,5 +1,7 @@
 package tim.vedagerp.api.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -137,14 +139,41 @@ public class JournalService {
 		return journalRowRepository.getBalance(nsId, start, end);
 	}
 
-    public List<JournalRow> listByMonth(int month, Long fyId, Long nsId) {
+	public List<JournalRow> listByMonth(int month, Long fyId, Long nsId) {
 
-        Date start = new Date();
+		Date start = new Date();
 		Date end = new Date();
 		start = fiscalYearRepository.findById(fyId).get().getStartDate();
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
-		month = month+ 1;
-		return journalRowRepository.getJournalByNsidFyidMonth(nsId, start, end,month);
+		month = month + 1;
+		return journalRowRepository.getJournalByNsidFyidMonth(nsId, start, end, month);
+	}
+
+	/**
+	 * Solde d'un sous comptes comptable
+	 * 
+	 */
+	public float getSoldeByNsidFyid(Long nsId,Long fyId, Long subAccountId) {
+		float solde = 0;
+		float soldeCredit = 0;
+		float soldeDebit = 0;
+		Date start = new Date();
+		Date end = new Date();
+		start = fiscalYearRepository.findById(fyId).get().getStartDate();
+		end = fiscalYearRepository.findById(fyId).get().getEndDate();
+		soldeCredit = journalRowRepository.getSoldeCreditByNsidFyid(nsId, subAccountId, start, end);
+		soldeDebit = journalRowRepository.getSoldeDebitByNsidFyid(nsId, subAccountId, start, end);
+		solde = soldeDebit - soldeCredit;
+		solde = this.roundFloat(solde, 2);
+		return solde;
+	}
+
+	
+    private float roundFloat(float f, int places) {
+ 
+        BigDecimal bigDecimal = new BigDecimal(Float.toString(f));
+        bigDecimal = bigDecimal.setScale(places, RoundingMode.HALF_UP);
+        return bigDecimal.floatValue();
     }
 
 }

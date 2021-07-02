@@ -76,10 +76,20 @@ public class JournalRowController {
 	}
 
 	@GetMapping("/ledger")
-	public ResponseEntity<?> getJournal(@RequestParam("subAccountId") Long subAccountId, @RequestParam("fyId") Long fyId,
-			@RequestParam("nsId") Long nsId) {
+	public ResponseEntity<?> getJournal( @RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId,@RequestParam("subAccountId") Long subAccountId, @RequestParam("month") int month) {
 		try {
-			Ledger ledger =  new Ledger();
+			List<JournalRow> ledger = journalService.getLedgerByNsAndFy(nsId, fyId, subAccountId, month);
+			return new ResponseEntity<>(ledger, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Pas de valeur pour id: " + nsId, HttpStatus.OK);
+		}
+	}
+
+	@GetMapping("/ledger/solde")
+	public ResponseEntity<?> getLedgerSolde(@RequestParam("subAccountId") Long subAccountId,
+			@RequestParam("fyId") Long fyId, @RequestParam("nsId") Long nsId) {
+		try {
+			Ledger ledger = new Ledger();
 			ledger.setSolde(journalService.getSoldeByNsidFyid(nsId, fyId, subAccountId));
 			return new ResponseEntity<>(ledger, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {

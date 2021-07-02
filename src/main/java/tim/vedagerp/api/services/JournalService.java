@@ -92,16 +92,13 @@ public class JournalService {
 	}
 
 	// Récupération du grand livre
-	public Ledger getLedger(Long id, String fy, Long nsId) {
-
-		Ledger ledger = new Ledger();
-		Date start = parseDate(fy + "-01-01");
-		Date end = parseDate(fy + "-12-31");
-		ledger.setCredit(
-				journalRowRepository.findByCreditIdAndNamespaceIdAndDateOperationBetween(id, nsId, start, end));
-		ledger.setDebit(journalRowRepository.findByDebitIdAndNamespaceIdAndDateOperationBetween(id, nsId, start, end));
-
-		return ledger;
+	public List<JournalRow> getLedgerByNsAndFy(Long nsId, Long fyId, Long accountid ,int month ) {
+		Date start = new Date();
+		Date end = new Date();
+		start = fiscalYearRepository.findById(fyId).get().getStartDate();
+		end = fiscalYearRepository.findById(fyId).get().getEndDate();
+		month=month+1;
+		return journalRowRepository.getLedger(nsId, accountid, start, end, month);
 	}
 
 	public List<Iresultat> getResultat(String prime, String fy, Long nsId) {

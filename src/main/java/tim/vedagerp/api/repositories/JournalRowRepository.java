@@ -88,4 +88,27 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND debit_id=:subAccountId", nativeQuery = true)
 	float getSoldeDebitByNsidFyid(@Param("nsid") Long nsId, @Param("subAccountId") Long subAccountId,
 			@Param("start") Date start, @Param("end") Date end);
+
+	
+
+	/*
+	 * Recherche journal par mois en fonction de l'espace de travail et de
+	 * l'exercice fiscal
+	 */
+	@Query(value = "SELECT * FROM journal " 
+	+"WHERE namespace_id=:nsid "
+	+"AND credit_id=:accountid "
+	+"AND date_operation BETWEEN :start AND :end "
+	+"AND EXTRACT(MONTH FROM date_operation) = :month "
+	+"UNION "
+	+"SELECT * FROM journal " 
+	+"WHERE namespace_id=:nsid "
+	+"AND debit_id=:accountid "
+	+"AND date_operation BETWEEN :start AND :end "
+	+"AND EXTRACT(MONTH FROM date_operation) = :month "
+	+"ORDER BY date_operation DESC", nativeQuery = true)
+	List<JournalRow> getLedger(@Param("nsid") Long nsId,@Param("accountid") Long accountid, @Param("start") Date start,
+			@Param("end") Date end, @Param("month") int month);
+
+			
 }

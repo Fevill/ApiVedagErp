@@ -1,5 +1,6 @@
 package tim.vedagerp.api.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -20,12 +21,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.AccountSolde;
+import tim.vedagerp.api.model.Bilan;
+import tim.vedagerp.api.model.BilanDetail;
 import tim.vedagerp.api.model.Ibalance;
-import tim.vedagerp.api.model.Ibilan;
-import tim.vedagerp.api.model.Iresultat;
 import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.model.Message;
+import tim.vedagerp.api.model.ResultatRow;
+import tim.vedagerp.api.services.AccountService;
 import tim.vedagerp.api.services.JournalService;
 
 @Controller
@@ -35,6 +40,9 @@ public class JournalRowController {
 
 	@Autowired
 	JournalService journalService;
+
+	@Autowired
+	AccountService accountService;
 
 	@GetMapping()
 	public ResponseEntity<?> getJournal(@RequestParam("sort") String sort, @RequestParam("order") String order,
@@ -97,40 +105,90 @@ public class JournalRowController {
 		}
 	}
 
-	@GetMapping("/balance")
-	public ResponseEntity<?> getBalance(@RequestParam("fiscalyear") String fy, @RequestParam("ndId") Long nsId) {
+	@GetMapping("/banq-account/solde")
+	public ResponseEntity<?> getAccountsSolde(@RequestParam("fyId") Long fyId, @RequestParam("nsId") Long nsId) {
 		try {
-			List<Ibalance> balance = journalService.getBalance(fy, nsId);
+			List<AccountSolde> accountSoldes = new ArrayList<>();
+			accountSoldes = journalService.banqAccountSold(nsId, fyId);
+			return new ResponseEntity<>(accountSoldes, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Pas de valeur pour id: " + nsId, HttpStatus.OK);
+		}
+	}
+
+	@GetMapping("/balance")
+	public ResponseEntity<?> getBalance(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId ) {
+		try {
+			List<Ibalance> balance = journalService.getBalance(nsId,fyId);
 			return new ResponseEntity<>(balance, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
 		}
 	}
 
-	@GetMapping("/resultat")
-	public ResponseEntity<?> getResultat(@RequestParam("prime") String prime, @RequestParam("fiscalyear") String fy,
-			@RequestParam("ndId") Long nsId) {
+	@GetMapping("/accounts")
+	public ResponseEntity<?> getAccount(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId,@RequestParam("accountId") String accountId) {
 		try {
-			List<Iresultat> resultat = journalService.getResultat(prime, fy, nsId);
+
+			List<Account> accounts =  accountService.listSubStartWith(nsId,accountId);
+			List<ResultatRow> resultats = new ArrayList<>();
+			//
+			for (Account account : accounts) {
+				ResultatRow row = new ResultatRow();
+				row.setAccount(account);
+				row.setSolde(journalService.getSoldeByNsidFyid(nsId, fyId, account.getId()));
+				resultats.add(row);
+			}
+			return new ResponseEntity<>(resultats, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
+		}
+	}
+
+	@GetMapping("/resultat")
+	public ResponseEntity<?> getResultat(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
+		try {
+			ResultatRow resultat = journalService.getResultat(nsId, fyId);
 			return new ResponseEntity<>(resultat, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
 		}
 	}
 
+
 	@GetMapping("/bilan")
 	/*
 	 * prime == Actif ou Passif
 	 */
-	public ResponseEntity<?> getBilan(@RequestParam("opt") String opt, @RequestParam("prime") String prime,
-			@RequestParam("fiscalyear") String fy, @RequestParam("ndId") Long nsId) {
+	public ResponseEntity<?> getBilan(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
 		try {
-			List<Ibilan> bilan = journalService.getBilan(prime, opt, fy, nsId);
+			Bilan bilan = journalService.getBilan(nsId, fyId);
 			return new ResponseEntity<>(bilan, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
 		}
 	}
+
+	@GetMapping("/bilan-detail/passif")
+	public ResponseEntity<?> getBilanDetailPassif(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
+		try {
+			List<BilanDetail> bilanDetail = journalService.getBilanPassifDetail(nsId, fyId);
+			return new ResponseEntity<>(bilanDetail, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
+		}
+	}
+
+	@GetMapping("/bilan-detail/actif")
+	public ResponseEntity<?> getBilanDetailActif(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
+		try {
+			List<BilanDetail> bilanDetail = journalService.getBilanActifDetail(nsId, fyId);
+			return new ResponseEntity<>(bilanDetail, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
+		}
+	}
+
 
 	@PostMapping()
 	public ResponseEntity<?> postJournal(@RequestBody JournalRow body) {

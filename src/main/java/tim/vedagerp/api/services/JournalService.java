@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,11 +20,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.AccountSolde;
+import tim.vedagerp.api.model.Bilan;
+import tim.vedagerp.api.model.BilanDetail;
 import tim.vedagerp.api.model.Ibalance;
-import tim.vedagerp.api.model.Ibilan;
-import tim.vedagerp.api.model.Iresultat;
+import tim.vedagerp.api.model.ResultatRow;
 import tim.vedagerp.api.model.Ledger;
+import tim.vedagerp.api.repositories.AccountRepository;
 import tim.vedagerp.api.repositories.FiscalYearRepository;
 import tim.vedagerp.api.repositories.JournalRowRepository;
 
@@ -31,6 +37,12 @@ public class JournalService {
 
 	@Autowired
 	JournalRowRepository journalRowRepository;
+
+	@Autowired
+	AccountRepository accountRepository;
+
+	@Autowired
+	AccountService accountService;
 
 	@Autowired
 	FiscalYearRepository fiscalYearRepository;
@@ -101,25 +113,118 @@ public class JournalService {
 		return journalRowRepository.getLedger(nsId, accountid, start, end, month);
 	}
 
-	public List<Iresultat> getResultat(String prime, String fy, Long nsId) {
-		Date start = parseDate(fy + "-01-01");
-		Date end = parseDate(fy + "-12-31");
-		if (prime.equals("Charges")) {
-			return journalRowRepository.getResultatCharges(nsId, start, end);
-		}
+	public List<ResultatRow> getAccount(Long nsId, Long fyId, String account) {
+		
+		Date start = new Date();
+		Date end = new Date();
+		start = fiscalYearRepository.findById(fyId).get().getStartDate();
+		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 		return journalRowRepository.getResultatProduits(nsId, start, end);
 	}
 
-	public List<Ibilan> getBilan(String prime, String opt, String fy, Long nsId) {
-		Date start = parseDate(fy + "-01-01");
-		Date end = parseDate(fy + "-12-31");
-		if (opt.equals("I")) {
-			end = parseDate(fy + "-01-01");
+	//** */
+	public ResultatRow getResultat(Long nsId, Long fyId){
+
+		// Récuppération des comptes de charges
+		ResultatRow row = new ResultatRow();
+		float soldeCharges = 0;
+		float soldeProduits = 0;
+		float solde =0;
+		List<Account> accountsCharges =  accountService.listSubStartWith(nsId,"6");
+		List<Account> accountsProduits =  accountService.listSubStartWith(nsId,"7");
+
+		for (Account account : accountsCharges) {
+			soldeCharges += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
 		}
-		if (prime.equals("Actif")) {
-			return journalRowRepository.getBilanActif(nsId, start, end);
+		for (Account account : accountsProduits) {
+			soldeProduits += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
 		}
-		return journalRowRepository.getBilanPassif(nsId, start, end);
+
+		solde = soldeProduits-soldeCharges;
+		if(solde>=0){
+			// gaint
+			row.setSolde(solde);
+		}else{
+			//perte
+			row.setSolde(solde);
+		}
+		return row;
+	}
+
+	public Bilan getBilan(Long nsId, Long fyId) {
+		
+		Date start = new Date();
+		Date end = new Date();
+		float soldePassif = 0;
+		float soldeActif = 0;
+		Bilan bilan= new Bilan();
+		start = fiscalYearRepository.findById(fyId).get().getStartDate();
+		end = fiscalYearRepository.findById(fyId).get().getEndDate();
+
+		// Calcul du solde passif
+		List<Account> accountsPassif =  accountService.listSubStartWith(nsId,"1");
+		for (Account account : accountsPassif) {
+			soldePassif += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
+		}
+
+		// Calcul du solde Actif
+		List<String> numbers = Arrays.asList("2","3","4","5");
+		List<Account> accountsTmp =  null;
+		for (String str : numbers) {
+			accountsTmp =  accountService.listSubStartWith(nsId,str);
+			for (Account account : accountsTmp ) {
+				soldeActif += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
+			}
+		}
+
+		bilan.setPassif(soldePassif);
+		bilan.setActif(soldeActif);
+
+		return bilan;
+	}
+
+
+	/**
+	 * Detail des comptes actif
+	 * @param nsId
+	 * @param fyId
+	 * @return
+	 */
+	public List<BilanDetail> getBilanActifDetail(Long nsId, Long fyId) {
+	
+		List<BilanDetail> bilanDetail =  new ArrayList<>();
+		List<String> numbers = Arrays.asList("2","3","4","5");
+		List<Account> accountsTmp =  null;
+		for (String str : numbers) {
+			accountsTmp =  accountService.listSubStartWith(nsId,str);
+			for (Account account : accountsTmp ) {
+				BilanDetail detail = new BilanDetail();
+				detail.setAccount(account);
+				detail.setSolde(this.getSoldeByNsidFyid(nsId, fyId, account.getId()));
+				bilanDetail.add(detail);
+			}
+		}
+		return bilanDetail;
+	}
+
+	/**
+	 * Details des comptes passif
+	 * @param nsId
+	 * @param fyId
+	 * @return
+	 */
+	public List<BilanDetail> getBilanPassifDetail(Long nsId, Long fyId) {
+		
+		List<Account> accountsPassif =  accountService.listSubStartWith(nsId,"1");
+		List<BilanDetail> bilanDetail =  new ArrayList<>();
+		for (Account account : accountsPassif) {
+			BilanDetail detail = new BilanDetail();
+			detail.setAccount(account);
+			detail.setSolde(this.getSoldeByNsidFyid(nsId, fyId, account.getId()));
+			bilanDetail.add(detail);
+		}
+
+		return bilanDetail;
 	}
 
 	public static Date parseDate(String date) {
@@ -130,9 +235,12 @@ public class JournalService {
 		}
 	}
 
-	public List<Ibalance> getBalance(String fy, Long nsId) {
-		Date start = parseDate(fy + "-01-01");
-		Date end = parseDate(fy + "-12-31");
+	// Récupération de la balance
+	public List<Ibalance> getBalance(Long nsId, Long fyId) {
+		Date start = new Date();
+		Date end = new Date();
+		start = fiscalYearRepository.findById(fyId).get().getStartDate();
+		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 		return journalRowRepository.getBalance(nsId, start, end);
 	}
 
@@ -144,6 +252,24 @@ public class JournalService {
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 		month = month + 1;
 		return journalRowRepository.getJournalByNsidFyidMonth(nsId, start, end, month);
+	}
+
+	public List<AccountSolde> banqAccountSold(Long nsId,Long fyId){
+
+		// Liste des comptes
+		List<Account> accounts = accountRepository.getSubAccounts( nsId, "5120");
+
+		List<AccountSolde> accountSoldes = new ArrayList<>();
+
+		// Liste des soldes plus comptes
+		for (Account account : accounts) {
+			AccountSolde accountSolde = new AccountSolde();
+			accountSolde.setAccount(account);
+			accountSolde.setSolde(this.getSoldeByNsidFyid(nsId,fyId, account.getId()));
+			accountSoldes.add(accountSolde);
+		}
+
+		return accountSoldes;
 	}
 
 	/**
@@ -161,9 +287,10 @@ public class JournalService {
 		soldeCredit = journalRowRepository.getSoldeCreditByNsidFyid(nsId, subAccountId, start, end);
 		soldeDebit = journalRowRepository.getSoldeDebitByNsidFyid(nsId, subAccountId, start, end);
 		solde = soldeDebit - soldeCredit;
-		solde = this.roundFloat(solde, 2);
 		return solde;
 	}
+
+	
 
 	
     private float roundFloat(float f, int places) {

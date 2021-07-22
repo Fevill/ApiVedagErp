@@ -34,10 +34,22 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 	// A Effacer
 	Page<Account> findAllByNamespaceIdAndAccountIsNotNull(Pageable pageable, Long id);
 
+	/*
+	 * Sélection des sous comptes
+	 */
+	@Query(value = "SELECT * FROM accounts " 
+	+"WHERE number LIKE  CONCAT(:number ,'%') "
+	+"AND account_id IS NOT NULL "
+	+"AND namespace_id=:nsid "
+	+"ORDER BY label ASC ", nativeQuery = true)
+	List<Account> getSubAccounts(@Param("nsid") Long nsId, @Param("number") String number);
+
 	List<Account> findAllByNamespaceId(Long id);
 
-	List<Account> findAllByNamespaceIdAndAccountIsNull(Long id);
+	List<Account> findAllByNamespaceIdAndAccountIsNullOrderByNumber(Long id);
 
-	List<Account> findAllByNamespaceIdAndAccountIsNotNull(Long id);
+	List<Account> findAllByNamespaceIdAndAccountIsNotNullOrderByNumber(Long id);
+
+	List<Account> findAllByNamespaceIdAndNumberStartsWithAndAccountIsNotNullOrderByNumber(Long id,String number);
 
 }

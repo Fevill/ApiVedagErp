@@ -54,9 +54,9 @@ public class AccountService {
 	// Liste des comptes selon id de l'espace de travail
 	public List<Account> listByNamespaceId(long id,String option) {
 		if(option.equals("sub")) {
-			return accountRepository. findAllByNamespaceIdAndAccountIsNotNull(id);
+			return accountRepository. findAllByNamespaceIdAndAccountIsNotNullOrderByNumber(id);
 		}else {
-			return accountRepository. findAllByNamespaceIdAndAccountIsNull(id);
+			return accountRepository. findAllByNamespaceIdAndAccountIsNullOrderByNumber(id);
 		}	
 	}
 	
@@ -151,7 +151,7 @@ public class AccountService {
 	 * @return
 	 */
     public List<Account> listRef(long id) {
-		return accountRepository.findAllByNamespaceIdAndAccountIsNull(id);
+		return accountRepository.findAllByNamespaceIdAndAccountIsNullOrderByNumber(id);
     }
 
 	/**
@@ -160,7 +160,17 @@ public class AccountService {
 	 * @return
 	 */
 	public List<Account> listSub(long id) {
-		return accountRepository.findAllByNamespaceIdAndAccountIsNotNull(id);
+		return accountRepository.findAllByNamespaceIdAndAccountIsNotNullOrderByNumber(id);
+    }
+
+
+	/**
+	 * Récuperation de tous les sous comptes débutant par
+	 * @param id
+	 * @return
+	 */
+	public List<Account> listSubStartWith(long id,String number) {
+		return accountRepository.findAllByNamespaceIdAndNumberStartsWithAndAccountIsNotNullOrderByNumber(id,number);
     }
 
 

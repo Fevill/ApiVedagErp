@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.entities.NameSpace;
 import tim.vedagerp.api.model.AccountSolde;
 import tim.vedagerp.api.model.Bilan;
 import tim.vedagerp.api.model.BilanDetail;
@@ -46,6 +47,9 @@ public class JournalService {
 
 	@Autowired
 	FiscalYearRepository fiscalYearRepository;
+
+	@Autowired
+	NameSpaceService nameSpaceService;
 
 	private static Logger logger = LogManager.getLogger(JournalService.class);
 
@@ -130,8 +134,8 @@ public class JournalService {
 		float soldeCharges = 0;
 		float soldeProduits = 0;
 		float solde =0;
-		List<Account> accountsCharges =  accountService.listSubStartWith(nsId,"6");
-		List<Account> accountsProduits =  accountService.listSubStartWith(nsId,"7");
+		List<Account> accountsCharges =  accountService.listSubLabelBilanStartWith(nsId,"CHARGE");
+		List<Account> accountsProduits =  accountService.listSubLabelBilanStartWith(nsId,"PRODUIT");
 
 		for (Account account : accountsCharges) {
 			soldeCharges += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
@@ -140,14 +144,56 @@ public class JournalService {
 			soldeProduits += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
 		}
 
-		solde = soldeProduits-soldeCharges;
+		solde = soldeProduits + soldeCharges;
+		// A registre du compte de resultat dans le journal
+		Account debit = null;
+		Account credit = null;
+		Account accountTmp = null;
+		JournalRow jr = null;
+		Date start = new Date();
+		Date end = new Date();
+		end = fiscalYearRepository.findById(fyId).get().getEndDate();
+		start = fiscalYearRepository.findById(fyId).get().getStartDate();
+		NameSpace ns = this.nameSpaceService.get(nsId);
+
 		if(solde>=0){
-			// gaint
+			// gaint/*
+			debit = accountService.listSubStartWith(nsId,"1200-0001").get(0);
+			credit = accountService.listSubStartWith(nsId,"1010-0002").get(0);
+			accountTmp = accountService.listSubStartWith(nsId,"1290-0001").get(0);
+			List<JournalRow> jrs = journalRowRepository.findByDebitIdAndNamespaceIdAndDateOperationBetween(debit.getId(), nsId, start, end);
+			List<JournalRow> jrs2 = journalRowRepository.findByCreditIdAndNamespaceIdAndDateOperationBetween(accountTmp.getId(), nsId, start, end);
+			if(jrs.size()==0){
+				jr = new JournalRow(end,"Compte de résultat",debit,credit,solde,ns);
+			}else{
+				jr = jrs.get(0);
+				jr.setAmount(solde);
+			}
+			if(jrs2.size()!=0){
+				journalRowRepository.delete(jrs2.get(0));
+			}
+			journalRowRepository.save(jr);
 			row.setSolde(solde);
 		}else{
 			//perte
+			debit = accountService.listSubStartWith(nsId,"1010-0002").get(0);
+			credit = accountService.listSubStartWith(nsId,"1290-0001").get(0);
+			accountTmp = accountService.listSubStartWith(nsId,"1200-0001").get(0);
+			List<JournalRow> jrs = journalRowRepository.findByCreditIdAndNamespaceIdAndDateOperationBetween(credit.getId(), nsId, start, end);
+			List<JournalRow> jrs2 = journalRowRepository.findByDebitIdAndNamespaceIdAndDateOperationBetween(accountTmp.getId(), nsId, start, end);
+			if(jrs.size()==0){
+				jr = new JournalRow(end,"Compte de résultat",debit,credit,solde,ns);
+			}else{
+				jr = jrs.get(0);
+				jr.setAmount(solde);
+			}
+			if(jrs2.size()!=0){
+				journalRowRepository.delete(jrs2.get(0));
+			}
+			journalRowRepository.save(jr);
 			row.setSolde(solde);
 		}
+		
 		return row;
 	}
 
@@ -162,21 +208,18 @@ public class JournalService {
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 
 		// Calcul du solde passif
-		List<Account> accountsPassif =  accountService.listSubStartWith(nsId,"1");
+		List<Account> accountsPassif =  accountService.listSubLabelBilanStartWith(nsId,"PASSIF");
 		for (Account account : accountsPassif) {
 			soldePassif += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
 		}
 
 		// Calcul du solde Actif
-		List<String> numbers = Arrays.asList("2","3","4","5");
 		List<Account> accountsTmp =  null;
-		for (String str : numbers) {
-			accountsTmp =  accountService.listSubStartWith(nsId,str);
-			for (Account account : accountsTmp ) {
-				soldeActif += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
-			}
+		accountsTmp =  accountService.listSubLabelBilanStartWith(nsId,"ACTIF");
+		for (Account account : accountsTmp ) {
+			soldeActif += this.getSoldeByNsidFyid(nsId, fyId, account.getId());
 		}
-
+		
 		bilan.setPassif(soldePassif);
 		bilan.setActif(soldeActif);
 
@@ -193,17 +236,15 @@ public class JournalService {
 	public List<BilanDetail> getBilanActifDetail(Long nsId, Long fyId) {
 	
 		List<BilanDetail> bilanDetail =  new ArrayList<>();
-		List<String> numbers = Arrays.asList("2","3","4","5");
+
 		List<Account> accountsTmp =  null;
-		for (String str : numbers) {
-			accountsTmp =  accountService.listSubStartWith(nsId,str);
-			for (Account account : accountsTmp ) {
+		accountsTmp =  accountService.listSubLabelBilanStartWith(nsId,"ACTIF");
+		for (Account account : accountsTmp ) {
 				BilanDetail detail = new BilanDetail();
 				detail.setAccount(account);
 				detail.setSolde(this.getSoldeByNsidFyid(nsId, fyId, account.getId()));
 				bilanDetail.add(detail);
 			}
-		}
 		return bilanDetail;
 	}
 
@@ -215,7 +256,7 @@ public class JournalService {
 	 */
 	public List<BilanDetail> getBilanPassifDetail(Long nsId, Long fyId) {
 		
-		List<Account> accountsPassif =  accountService.listSubStartWith(nsId,"1");
+	List<Account> accountsPassif =  accountService.listSubLabelBilanStartWith(nsId,"PASSIF");
 		List<BilanDetail> bilanDetail =  new ArrayList<>();
 		for (Account account : accountsPassif) {
 			BilanDetail detail = new BilanDetail();
@@ -282,12 +323,26 @@ public class JournalService {
 		float soldeDebit = 0;
 		Date start = new Date();
 		Date end = new Date();
+		Account account = new Account();
+		account = accountService.get(subAccountId);
 		start = fiscalYearRepository.findById(fyId).get().getStartDate();
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 		soldeCredit = journalRowRepository.getSoldeCreditByNsidFyid(nsId, subAccountId, start, end);
 		soldeDebit = journalRowRepository.getSoldeDebitByNsidFyid(nsId, subAccountId, start, end);
-		solde = soldeDebit - soldeCredit;
-		return solde;
+		/** -A 
+		if(account.getLabelBilan().equals("PRODUIT") || account.getLabelBilan().equals("PASSIF")){
+			solde = soldeCredit-soldeDebit;
+		}else{
+			solde = soldeDebit - soldeCredit;
+		}*/
+
+		solde = soldeCredit-soldeDebit;
+
+		if(account.getNumber().startsWith("1200-0001")){
+			solde = soldeDebit - soldeCredit;
+		}
+
+		return this.roundFloat(solde,2);
 	}
 
 	

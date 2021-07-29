@@ -173,6 +173,15 @@ public class AccountService {
 		return accountRepository.findAllByNamespaceIdAndNumberStartsWithAndAccountIsNotNullOrderByNumber(id,number);
     }
 
+	/**
+	 * Récuperation de tous les sous comptes en fonction du label bilan
+	 * @param id
+	 * @return
+	 */
+	public List<Account> listSubLabelBilanStartWith(long id,String label) {
+		return accountRepository.findAllByNamespaceIdAndLabelBilanStartsWithAndAccountIsNotNullOrderByNumber(id,label);
+    }
+
 
 
 }

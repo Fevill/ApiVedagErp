@@ -83,14 +83,14 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 	/**
 	 * Solde credit d'un sous comptes
 	 */
-	@Query(value = "SELECT COALESCE(ROUND(SUM(amount)::::numeric,2), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND credit_id=:subAccountId", nativeQuery = true)
+	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND credit_id=:subAccountId", nativeQuery = true)
 	float getSoldeCreditByNsidFyid(@Param("nsid") Long nsId, @Param("subAccountId") Long subAccountId,
 			@Param("start") Date start, @Param("end") Date end);
 
 	/**
 	 * Solde debit d'un sous comptes
 	 */
-	@Query(value = "SELECT COALESCE(ROUND(SUM(amount)::::numeric,2), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND debit_id=:subAccountId", nativeQuery = true)
+	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND debit_id=:subAccountId", nativeQuery = true)
 	float getSoldeDebitByNsidFyid(@Param("nsid") Long nsId, @Param("subAccountId") Long subAccountId,
 			@Param("start") Date start, @Param("end") Date end);
 

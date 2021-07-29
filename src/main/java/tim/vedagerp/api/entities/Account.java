@@ -27,6 +27,9 @@ public class Account {
 	private Long id;
 	@Column(unique=true)
 	private String label;
+
+	@Column()
+	private String labelBilan;
 	
 	@Column(unique=true)
 	private	String	number;
@@ -51,6 +54,12 @@ public class Account {
 	
 	public Account getAccount() {
 		return account;
+	}
+	public String getLabelBilan() {
+		return labelBilan;
+	}
+	public void setLabelBilan(String labelBilan) {
+		this.labelBilan = labelBilan;
 	}
 	public void setAccount(Account account) {
 		this.account = account;

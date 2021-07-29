@@ -1,6 +1,6 @@
 package tim.vedagerp.api.entities;
 
-import java.sql.Date;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,8 +32,21 @@ public class JournalRow {
 	private NameSpace namespace;
 	
 	private float amount;
+
+	public JournalRow(){}
+
+	public JournalRow(Date dateOperation, String label, Account debit,
+	 Account credit, float solde, NameSpace ns) {
+		
+		this.dateOperation = dateOperation;
+		this.amount = solde;
+		this.credit = credit;
+		this.debit = debit;
+		this.namespace = ns;
+		this.label = label;
+	}
 	
-	public Long getId() {
+    public Long getId() {
 		return id;
 	}
 	public void setId(Long id) {

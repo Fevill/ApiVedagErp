@@ -130,7 +130,7 @@ public class JournalRowController {
 	public ResponseEntity<?> getAccount(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId,@RequestParam("accountId") String accountId) {
 		try {
 
-			List<Account> accounts =  accountService.listSubStartWith(nsId,accountId);
+			List<Account> accounts =  accountService.listSubLabelBilanStartWith(nsId,accountId);
 			List<ResultatRow> resultats = new ArrayList<>();
 			//
 			for (Account account : accounts) {

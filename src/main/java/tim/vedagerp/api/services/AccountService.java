@@ -72,6 +72,7 @@ public class AccountService {
 
 	// Ajouter une écriture comptable
 	public Account add(Account body) {
+		logger.info(body);
 		return accountRepository.save(body);
 	}
 

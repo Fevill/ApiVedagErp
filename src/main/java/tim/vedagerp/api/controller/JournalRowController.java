@@ -1,6 +1,7 @@
 package tim.vedagerp.api.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -29,9 +30,13 @@ import tim.vedagerp.api.model.BilanDetail;
 import tim.vedagerp.api.model.Ibalance;
 import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.model.Message;
+import tim.vedagerp.api.model.ResultatNsRow;
 import tim.vedagerp.api.model.ResultatRow;
 import tim.vedagerp.api.services.AccountService;
 import tim.vedagerp.api.services.JournalService;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Controller
 @CrossOrigin(origins = "*")
@@ -43,6 +48,8 @@ public class JournalRowController {
 
 	@Autowired
 	AccountService accountService;
+
+	private static Logger logger = LogManager.getLogger(JournalRowController.class);
 
 	@GetMapping()
 	public ResponseEntity<?> getJournal(@RequestParam("sort") String sort, @RequestParam("order") String order,
@@ -98,6 +105,7 @@ public class JournalRowController {
 			@RequestParam("fyId") Long fyId, @RequestParam("nsId") Long nsId) {
 		try {
 			Ledger ledger = new Ledger();
+;
 			ledger.setSolde(journalService.getSoldeByNsidFyid(nsId, fyId, subAccountId));
 			return new ResponseEntity<>(ledger, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
@@ -150,6 +158,16 @@ public class JournalRowController {
 		try {
 			ResultatRow resultat = journalService.getResultat(nsId, fyId);
 			return new ResponseEntity<>(resultat, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
+		}
+	}
+
+	@GetMapping("/resultat/months")
+	public ResponseEntity<?> getResultatByMonths(@RequestParam("nsId") Long nsId) {
+		try {
+			List<ResultatNsRow> resultats = journalService.getResultatByNs(nsId);
+			return new ResponseEntity<>(resultats, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
 		}

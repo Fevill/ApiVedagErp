@@ -6,9 +6,16 @@ public class ResultatRow {
 	
 	private Account account;
 	private float solde;
+    private String month;
     
     public Account getAccount() {
         return account;
+    }
+    public String getMonth() {
+        return month;
+    }
+    public void setMonth(String month) {
+        this.month = month;
     }
     public void setAccount(Account account) {
         this.account = account;

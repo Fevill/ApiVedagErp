@@ -99,9 +99,12 @@ public class Account {
 	}
 	@Override
 	public String toString() {
-		return "Account [id=" + id + ", label=" + label + ", number=" + number + ", category=" + category
-				+ ", journalDebit=" + journalDebit + ", journalCredit=" + journalCredit + "]";
+		return "Account [category=" + category + ", id=" + id + ", journalCredit=" + journalCredit + ", journalDebit="
+				+ journalDebit + ", label=" + label + ", labelBilan=" + labelBilan + ", namespace=" + namespace
+				+ ", number=" + number + "]";
 	}
+
+	
 	
 	
 }

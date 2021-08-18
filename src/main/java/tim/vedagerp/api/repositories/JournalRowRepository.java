@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.IResultatMonth;
 import tim.vedagerp.api.model.Ibalance;
 import tim.vedagerp.api.model.ResultatRow;
 
@@ -56,7 +57,7 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 			+ "COALESCE(ROUND(SUM(credit)::::numeric,2),0) as credit  FROM public.accounts  LEFT JOIN (  "
 			+ "	SELECT * FROM public.v_balance WHERE public.v_balance.namespace_id=:nsid "
 			+ "AND (date_operation  BETWEEN :start AND :end OR  date_operation ISNULL) )as b "
-			+ "ON b.acc_id = public.accounts.id WHERE public.accounts.account_id IS NOT NULL "
+			+ "ON b.acc_id = public.accounts.id WHERE public.accounts.account_id IS NOT NULL AND public.accounts.namespace_id=:nsid "
 			+ "GROUP BY accounts.id ORDER BY accounts.number", nativeQuery = true)
 	List<Ibalance> getBalance(@Param("nsid") Long nsId, @Param("start") Date start, @Param("end") Date end);
 
@@ -105,5 +106,43 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 			+ "ORDER BY date_operation DESC", nativeQuery = true)
 	List<JournalRow> getLedger(@Param("nsid") Long nsId, @Param("accountid") Long accountid, @Param("start") Date start,
 			@Param("end") Date end, @Param("month") int month);
+
+
+
+	@Query(value = "SELECT vsCredit.mois, (COALESCE(vsCredit.soldeCredit,0)-COALESCE(vsDebit.soldeDebit,0))  as solde, COALESCE(vsCredit.soldeCredit,0)  as affaire  FROM ( "
+		+"SELECT SUM(amount) AS soldeCredit, "
+		+"EXTRACT(MONTH FROM date_operation) AS mois, "
+		+"journal.namespace_id FROM public.journal "
+		+"LEFT JOIN accounts ON "
+		+"accounts.id = credit_id  "
+		+"LEFT JOIN fiscalyear ON "
+		+"fiscalyear.namespace_id = journal.namespace_id "
+		+"WHERE public.journal.namespace_id=:nsId  "
+		+"AND fiscalyear.id = :fyId AND date_operation BETWEEN " 
+		+"fiscalyear.start_date AND fiscalyear.end_date "
+		+"AND accounts.label_bilan = 'PRODUIT' "
+		+"GROUP BY mois,journal.namespace_id "
+		+"ORDER BY mois ) as vsCredit "
+		+"LEFT JOIN  "
+		+"(SELECT * FROM ( "
+		+"SELECT SUM(amount) AS soldeDebit,  "
+		+"EXTRACT(MONTH FROM date_operation) AS mois,  " 
+		+"journal.namespace_id FROM public.journal "
+		+"LEFT JOIN accounts ON "
+		+"accounts.id = debit_id  "
+		+"LEFT JOIN fiscalyear ON "
+		+"fiscalyear.namespace_id = journal.namespace_id "
+		+"WHERE public.journal.namespace_id=:nsId  "
+		+"AND fiscalyear.id = :fyId AND date_operation  BETWEEN  "
+		+"fiscalyear.start_date AND fiscalyear.end_date "
+		+"AND accounts.label_bilan = 'CHARGE' "
+		+"GROUP BY mois,journal.namespace_id "
+		+"ORDER BY mois) as vsDebit0 ) as vsDebit "
+		+"ON vsCredit.mois = vsDebit.mois", nativeQuery = true)
+	List<IResultatMonth>  getResultatByMonth(@Param("nsId") Long nsId, @Param("fyId") Long  fyId);
+
+
+
+
 
 }

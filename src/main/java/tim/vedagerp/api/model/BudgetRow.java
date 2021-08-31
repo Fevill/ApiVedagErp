@@ -2,15 +2,22 @@ package tim.vedagerp.api.model;
 
 import tim.vedagerp.api.entities.Account;
 
-public class ResultatRow {
+public class BudgetRow {
 	
 	private Account account;
 	private float solde;
     private float soldeprev;
+    private float soldediff;
     private String month;
     
     public Account getAccount() {
         return account;
+    }
+    public float getSoldediff() {
+        return soldediff;
+    }
+    public void setSoldediff(float soldediff) {
+        this.soldediff = soldediff;
     }
     public float getSoldeprev() {
         return soldeprev;
@@ -32,6 +39,9 @@ public class ResultatRow {
     }
     public void setSolde(float solde) {
         this.solde = solde;
+    }
+    public void calculSoldeDiff() {
+        this.soldediff=this.solde-this.soldeprev;
     }
 
 }

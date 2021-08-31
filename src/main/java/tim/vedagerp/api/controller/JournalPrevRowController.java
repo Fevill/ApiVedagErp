@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import tim.vedagerp.api.entities.Account;
-import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.entities.JournalPrevRow;
 import tim.vedagerp.api.model.AccountSolde;
 import tim.vedagerp.api.model.Bilan;
 import tim.vedagerp.api.model.BilanDetail;
@@ -32,9 +32,7 @@ import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.model.ResultatNsRow;
 import tim.vedagerp.api.model.ResultatRow;
-import tim.vedagerp.api.model.BudgetRow;
 import tim.vedagerp.api.services.AccountService;
-import tim.vedagerp.api.services.JournalService;
 import tim.vedagerp.api.services.JournalPrevService;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,11 +40,8 @@ import org.apache.logging.log4j.Logger;
 
 @Controller
 @CrossOrigin(origins = "*")
-@RequestMapping("api/v1/journal")
-public class JournalRowController {
-
-	@Autowired
-	JournalService journalService;
+@RequestMapping("api/v1/journal-prev")
+public class JournalPrevRowController {
 
 	@Autowired
 	JournalPrevService journalPrevService;
@@ -54,16 +49,16 @@ public class JournalRowController {
 	@Autowired
 	AccountService accountService;
 
-	private static Logger logger = LogManager.getLogger(JournalRowController.class);
+	private static Logger logger = LogManager.getLogger(JournalPrevRowController.class);
 
 	@GetMapping()
 	public ResponseEntity<?> getJournal(@RequestParam("sort") String sort, @RequestParam("order") String order,
 			@RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("fyId") Long fyId,
 			@RequestParam("nsId") Long nsId) {
-		// Page<JournalRow> accounts =
+		// Page<JournalPrevRow> accounts =
 		// journalService.listSortOrder(sort,order,page,size,fy,id);
 
-		Page<JournalRow> accounts = journalService.listSortOrder(sort, order, page, size, fyId, nsId);
+		Page<JournalPrevRow> accounts = journalPrevService.listSortOrder(sort, order, page, size, fyId, nsId);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 
 	}
@@ -71,24 +66,24 @@ public class JournalRowController {
 	@GetMapping("/month")
 	public ResponseEntity<?> getJournalByMonth(@RequestParam("month") int month, @RequestParam("fyId") Long fyId,
 			@RequestParam("nsId") Long nsId) {
-		// Page<JournalRow> accounts =
-		// journalService.listSortOrder(sort,order,page,size,fy,id);
+		// Page<JournalPrevRow> accounts =
+		// journalService.listSortOrder(sort,order,page,size,fy,id);new ArrayList();//
 
-		List<JournalRow> accounts = journalService.listByMonth(month, fyId, nsId);
+		List<JournalPrevRow> accounts = journalPrevService.listByMonth(month, fyId, nsId);
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 
 	}
 
 	@GetMapping("/all")
 	public ResponseEntity<?> getJournal() {
-		List<JournalRow> accounts = journalService.list();
+		List<JournalPrevRow> accounts = journalPrevService.list();
 		return new ResponseEntity<>(accounts, HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getJournal(@PathVariable("id") long id) {
 		try {
-			JournalRow account = journalService.get(id);
+			JournalPrevRow account = journalPrevService.get(id);
 			return new ResponseEntity<>(account, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Pas de valeur pour id: " + id, HttpStatus.OK);
@@ -98,7 +93,7 @@ public class JournalRowController {
 	@GetMapping("/ledger")
 	public ResponseEntity<?> getJournal( @RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId,@RequestParam("subAccountId") Long subAccountId, @RequestParam("month") int month) {
 		try {
-			List<JournalRow> ledger = journalService.getLedgerByNsAndFy(nsId, fyId, subAccountId, month);
+			List<JournalPrevRow> ledger = journalPrevService.getLedgerByNsAndFy(nsId, fyId, subAccountId, month);
 			return new ResponseEntity<>(ledger, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Pas de valeur pour id: " + nsId, HttpStatus.OK);
@@ -111,7 +106,7 @@ public class JournalRowController {
 		try {
 			Ledger ledger = new Ledger();
 ;
-			ledger.setSolde(journalService.getSoldeByNsidFyid(nsId, fyId, subAccountId));
+			ledger.setSolde(journalPrevService.getSoldeByNsidFyid(nsId, fyId, subAccountId));
 			return new ResponseEntity<>(ledger, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Pas de valeur pour id: " + nsId, HttpStatus.OK);
@@ -122,7 +117,7 @@ public class JournalRowController {
 	public ResponseEntity<?> getAccountsSolde(@RequestParam("fyId") Long fyId, @RequestParam("nsId") Long nsId) {
 		try {
 			List<AccountSolde> accountSoldes = new ArrayList<>();
-			accountSoldes = journalService.banqAccountSold(nsId, fyId);
+			accountSoldes = journalPrevService.banqAccountSold(nsId, fyId);
 			return new ResponseEntity<>(accountSoldes, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Pas de valeur pour id: " + nsId, HttpStatus.OK);
@@ -132,7 +127,7 @@ public class JournalRowController {
 	@GetMapping("/balance")
 	public ResponseEntity<?> getBalance(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId ) {
 		try {
-			List<Ibalance> balance = journalService.getBalance(nsId,fyId);
+			List<Ibalance> balance = journalPrevService.getBalance(nsId,fyId);
 			return new ResponseEntity<>(balance, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
@@ -149,35 +144,7 @@ public class JournalRowController {
 			for (Account account : accounts) {
 				ResultatRow row = new ResultatRow();
 				row.setAccount(account);
-				row.setSolde(journalService.getSoldeByNsidFyid(nsId, fyId, account.getId()));
-				row.setSoldeprev(journalPrevService.getSoldeByNsidFyid(nsId, fyId, account.getId()));
-				resultats.add(row);
-
-				logger.info(row);
-			}
-			return new ResponseEntity<>(resultats, HttpStatus.OK);
-		} catch (NoSuchElementException ex) {
-			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
-		}
-	}
-
-	@GetMapping("/budget")
-	public ResponseEntity<?> getBudget(
-		@RequestParam("nsId") Long nsId,
-		@RequestParam("start") String startstr,
-		@RequestParam("end") String endstr,
-		@RequestParam("accountId") String accountId) {
-		try {
-
-			List<Account> accounts =  accountService.listSubLabelBilanStartWith(nsId,accountId);
-			List<BudgetRow> resultats = new ArrayList<>();
-			//
-			for (Account account : accounts) {
-				BudgetRow row = new BudgetRow();
-				row.setAccount(account);
-				row.setSolde(journalService.getSoldeByNsidMonth(nsId, startstr,endstr, account.getId()));
-				row.setSoldeprev(journalPrevService.getSoldeByNsidMonth(nsId, startstr,endstr, account.getId()));
-				row.calculSoldeDiff();
+				row.setSolde(journalPrevService.getSoldeByNsidFyid(nsId, fyId, account.getId()));
 				resultats.add(row);
 			}
 			return new ResponseEntity<>(resultats, HttpStatus.OK);
@@ -189,7 +156,7 @@ public class JournalRowController {
 	@GetMapping("/resultat")
 	public ResponseEntity<?> getResultat(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
 		try {
-			ResultatRow resultat = journalService.getResultat(nsId, fyId);
+			ResultatRow resultat = journalPrevService.getResultat(nsId, fyId);
 			return new ResponseEntity<>(resultat, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
@@ -199,7 +166,7 @@ public class JournalRowController {
 	@GetMapping("/resultat/months")
 	public ResponseEntity<?> getResultatByMonths(@RequestParam("nsId") Long nsId) {
 		try {
-			List<ResultatNsRow> resultats = journalService.getResultatByNs(nsId);
+			List<ResultatNsRow> resultats = journalPrevService.getResultatByNs(nsId);
 			return new ResponseEntity<>(resultats, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
@@ -213,7 +180,7 @@ public class JournalRowController {
 	 */
 	public ResponseEntity<?> getBilan(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
 		try {
-			Bilan bilan = journalService.getBilan(nsId, fyId);
+			Bilan bilan = journalPrevService.getBilan(nsId, fyId);
 			return new ResponseEntity<>(bilan, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
@@ -223,7 +190,7 @@ public class JournalRowController {
 	@GetMapping("/bilan-detail/passif")
 	public ResponseEntity<?> getBilanDetailPassif(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
 		try {
-			List<BilanDetail> bilanDetail = journalService.getBilanPassifDetail(nsId, fyId);
+			List<BilanDetail> bilanDetail = journalPrevService.getBilanPassifDetail(nsId, fyId);
 			return new ResponseEntity<>(bilanDetail, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
@@ -233,7 +200,7 @@ public class JournalRowController {
 	@GetMapping("/bilan-detail/actif")
 	public ResponseEntity<?> getBilanDetailActif(@RequestParam("nsId") Long nsId,@RequestParam("fyId") Long fyId) {
 		try {
-			List<BilanDetail> bilanDetail = journalService.getBilanActifDetail(nsId, fyId);
+			List<BilanDetail> bilanDetail = journalPrevService.getBilanActifDetail(nsId, fyId);
 			return new ResponseEntity<>(bilanDetail, HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
@@ -242,9 +209,9 @@ public class JournalRowController {
 
 
 	@PostMapping()
-	public ResponseEntity<?> postJournal(@RequestBody JournalRow body) {
+	public ResponseEntity<?> postJournal(@RequestBody JournalPrevRow body) {
 		try {
-			JournalRow account = journalService.add(body);
+			JournalPrevRow account = journalPrevService.add(body);
 			return new ResponseEntity<>(account, HttpStatus.OK);
 		} catch (HttpMessageNotReadableException ex) {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
@@ -252,9 +219,9 @@ public class JournalRowController {
 	}
 
 	@PostMapping("/all")
-	public ResponseEntity<?> postJournalAll(@RequestBody List<JournalRow> body) {
+	public ResponseEntity<?> postJournalAll(@RequestBody List<JournalPrevRow> body) {
 		try {
-			List<JournalRow> account = journalService.addAll(body);
+			List<JournalPrevRow> account = journalPrevService.addAll(body);
 			return new ResponseEntity<>(account, HttpStatus.OK);
 		} catch (HttpMessageNotReadableException ex) {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
@@ -262,9 +229,9 @@ public class JournalRowController {
 	}
 
 	@PutMapping()
-	public ResponseEntity<?> putJournal(@RequestBody JournalRow body) {
+	public ResponseEntity<?> putJournal(@RequestBody JournalPrevRow body) {
 		try {
-			JournalRow account = journalService.update(body);
+			JournalPrevRow account = journalPrevService.update(body);
 			return new ResponseEntity<>(account, HttpStatus.OK);
 		} catch (HttpMessageNotReadableException ex) {
 			return new ResponseEntity<>("Le body n'existe pas.", HttpStatus.OK);
@@ -276,7 +243,7 @@ public class JournalRowController {
 
 		try {
 			Message res = new Message();
-			res.setText(journalService.delete(id));
+			res.setText(journalPrevService.delete(id));
 			return new ResponseEntity<>(res, HttpStatus.OK);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ResponseEntity<>(String.format("Id %d n'existe pas.", id), HttpStatus.OK);

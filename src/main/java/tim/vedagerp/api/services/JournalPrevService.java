@@ -5,13 +5,12 @@ import java.math.RoundingMode;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,7 +27,7 @@ import org.springframework.stereotype.Service;
 
 import tim.vedagerp.api.entities.Account;
 import tim.vedagerp.api.entities.FiscalYear;
-import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.entities.JournalPrevRow;
 import tim.vedagerp.api.entities.NameSpace;
 import tim.vedagerp.api.model.AccountSolde;
 import tim.vedagerp.api.model.Bilan;
@@ -41,13 +40,9 @@ import tim.vedagerp.api.model.ResultatNsRow;
 import tim.vedagerp.api.repositories.AccountRepository;
 import tim.vedagerp.api.repositories.FiscalYearRepository;
 import tim.vedagerp.api.repositories.JournalPrevRowRepository;
-import tim.vedagerp.api.repositories.JournalRowRepository;
 
 @Service
-public class JournalService {
-
-	@Autowired
-	JournalRowRepository journalRowRepository;
+public class JournalPrevService {
 
 	@Autowired
 	JournalPrevRowRepository journalPrevRowRepository;
@@ -67,10 +62,10 @@ public class JournalService {
 	@Autowired
 	NameSpaceService nameSpaceService;
 
-	private static Logger logger = LogManager.getLogger(JournalService.class);
+	private static Logger logger = LogManager.getLogger(JournalPrevService.class);
 
 	// Le journal
-	public Page<JournalRow> listSortOrder(String sort, String order, int page, int size, Long fyId, Long nsId) {
+	public Page<JournalPrevRow> listSortOrder(String sort, String order, int page, int size, Long fyId, Long nsId) {
 		Pageable pageable = null;
 		logger.info("delAccount");
 		if (order.equals("asc")) {
@@ -83,54 +78,54 @@ public class JournalService {
 		start = fiscalYearRepository.findById(fyId).get().getStartDate();
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 
-		return journalRowRepository.findAllByNamespaceIdAndDateOperationBetween(pageable, nsId, start, end);
+		return journalPrevRowRepository.findAllByNamespaceIdAndDateOperationBetween(pageable, nsId, start, end);
 	}
 
 	// Le journal
-	public List<JournalRow> list() {
+	public List<JournalPrevRow> list() {
 
-		return journalRowRepository.findAll();
+		return journalPrevRowRepository.findAll();
 	}
 
 	// Le journal by namespace
-	public List<JournalRow> listByNamespaceId(Long id) {
+	public List<JournalPrevRow> listByNamespaceId(Long id) {
 
-		return journalRowRepository.findAllByNamespaceId(id);
+		return journalPrevRowRepository.findAllByNamespaceId(id);
 	}
 
 	// Ajouter une écriture comptable
-	public JournalRow get(long id) throws NoSuchElementException {
-		return journalRowRepository.findById(id).get();
+	public JournalPrevRow get(long id) throws NoSuchElementException {
+		return journalPrevRowRepository.findById(id).get();
 	}
 
 	// Ajouter une écriture comptable
-	public JournalRow add(JournalRow body) {
-		return journalRowRepository.saveAndFlush(body);
+	public JournalPrevRow add(JournalPrevRow body) {
+		return journalPrevRowRepository.saveAndFlush(body);
 	}
 
 	// Modifier une écriture comptable
-	public JournalRow update(JournalRow body) {
-		return journalRowRepository.saveAndFlush(body);
+	public JournalPrevRow update(JournalPrevRow body) {
+		return journalPrevRowRepository.saveAndFlush(body);
 	}
 
 	// Supprimer une écriture comptable
 	public String delete(long id) throws EmptyResultDataAccessException {
-		journalRowRepository.deleteById(id);
+		journalPrevRowRepository.deleteById(id);
 		return "Success";
 	}
 
-	public List<JournalRow> addAll(List<JournalRow> body) {
-		return journalRowRepository.saveAll(body);
+	public List<JournalPrevRow> addAll(List<JournalPrevRow> body) {
+		return journalPrevRowRepository.saveAll(body);
 	}
 
 	// Récupération du grand livre
-	public List<JournalRow> getLedgerByNsAndFy(Long nsId, Long fyId, Long accountid, int month) {
+	public List<JournalPrevRow> getLedgerByNsAndFy(Long nsId, Long fyId, Long accountid, int month) {
 		Date start = new Date();
 		Date end = new Date();
 		start = fiscalYearRepository.findById(fyId).get().getStartDate();
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 		month = month + 1;
-		return journalRowRepository.getLedger(nsId, accountid, start, end, month);
+		return journalPrevRowRepository.getLedger(nsId, accountid, start, end, month);
 	}
 
 	public List<ResultatRow> getAccount(Long nsId, Long fyId, String account) {
@@ -139,7 +134,7 @@ public class JournalService {
 		Date end = new Date();
 		start = fiscalYearRepository.findById(fyId).get().getStartDate();
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
-		return journalRowRepository.getResultatProduits(nsId, start, end);
+		return journalPrevRowRepository.getResultatProduits(nsId, start, end);
 	}
 
 	public List<ResultatNsRow> getResultatByNs(Long nsId){
@@ -150,8 +145,7 @@ public class JournalService {
 
 		for (FiscalYear fiscalYear : fys) {
 			ResultatNsRow row = new  ResultatNsRow();
-			List<IResultatMonth> rnr =  journalRowRepository.getResultatByMonth(nsId, fiscalYear.getId());
-			List<IResultatMonth> rnrprev =  journalPrevRowRepository.getResultatByMonth(nsId, fiscalYear.getId());
+			List<IResultatMonth> rnr =  journalPrevRowRepository.getResultatByMonth(nsId, fiscalYear.getId());
 			row.setFy(fiscalYear);
 			row.setResultatsSolde(rnr);
 			rows.add(row);
@@ -249,7 +243,7 @@ public class JournalService {
 		Account debit = null;
 		Account credit = null;
 		Account accountTmp = null;
-		JournalRow jr = null;
+		JournalPrevRow jr = null;
 
 		NameSpace ns = this.nameSpaceService.get(nsId);
 
@@ -258,40 +252,40 @@ public class JournalService {
 			debit = accountService.listSubStartWith(nsId, "1200-0001").get(0);
 			credit = accountService.listSubStartWith(nsId, "1010-0002").get(0);
 			accountTmp = accountService.listSubStartWith(nsId, "1290-0001").get(0);
-			List<JournalRow> jrs = journalRowRepository
+			List<JournalPrevRow> jrs = journalPrevRowRepository
 					.findByDebitIdAndNamespaceIdAndDateOperationBetween(debit.getId(), nsId, start, end);
-			List<JournalRow> jrs2 = journalRowRepository
+			List<JournalPrevRow> jrs2 = journalPrevRowRepository
 					.findByCreditIdAndNamespaceIdAndDateOperationBetween(accountTmp.getId(), nsId, start, end);
 			if (jrs.size() == 0) {
-				jr = new JournalRow(end, "Compte de résultat", debit, credit, solde, ns);
+				jr = new JournalPrevRow(end, "Compte de résultat", debit, credit, solde, ns);
 			} else {
 				jr = jrs.get(0);
 				jr.setAmount(solde);
 			}
 			if (jrs2.size() != 0) {
-				journalRowRepository.delete(jrs2.get(0));
+				journalPrevRowRepository.delete(jrs2.get(0));
 			}
-			journalRowRepository.save(jr);
+			journalPrevRowRepository.save(jr);
 			row.setSolde(solde);
 		} else {
 			// perte
 			debit = accountService.listSubStartWith(nsId, "1010-0002").get(0);
 			credit = accountService.listSubStartWith(nsId, "1290-0001").get(0);
 			accountTmp = accountService.listSubStartWith(nsId, "1200-0001").get(0);
-			List<JournalRow> jrs = journalRowRepository
+			List<JournalPrevRow> jrs = journalPrevRowRepository
 					.findByCreditIdAndNamespaceIdAndDateOperationBetween(credit.getId(), nsId, start, end);
-			List<JournalRow> jrs2 = journalRowRepository
+			List<JournalPrevRow> jrs2 = journalPrevRowRepository
 					.findByDebitIdAndNamespaceIdAndDateOperationBetween(accountTmp.getId(), nsId, start, end);
 			if (jrs.size() == 0) {
-				jr = new JournalRow(end, "Compte de résultat", debit, credit, solde, ns);
+				jr = new JournalPrevRow(end, "Compte de résultat", debit, credit, solde, ns);
 			} else {
 				jr = jrs.get(0);
 				jr.setAmount(solde);
 			}
 			if (jrs2.size() != 0) {
-				journalRowRepository.delete(jrs2.get(0));
+				journalPrevRowRepository.delete(jrs2.get(0));
 			}
-			journalRowRepository.save(jr);
+			journalPrevRowRepository.save(jr);
 			
 			solde = this.roundFloat(solde, 2);
 
@@ -396,17 +390,17 @@ public class JournalService {
 		Date end = new Date();
 		start = fiscalYearRepository.findById(fyId).get().getStartDate();
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
-		return journalRowRepository.getBalance(nsId, start, end);
+		return journalPrevRowRepository.getBalance(nsId, start, end);
 	}
 
-	public List<JournalRow> listByMonth(int month, Long fyId, Long nsId) {
+	public List<JournalPrevRow> listByMonth(int month, Long fyId, Long nsId) {
 
 		Date start = new Date();
 		Date end = new Date();
 		start = fiscalYearRepository.findById(fyId).get().getStartDate();
 		end = fiscalYearRepository.findById(fyId).get().getEndDate();
 		month = month + 1;
-		return journalRowRepository.getJournalByNsidFyidMonth(nsId, start, end, month);
+		return journalPrevRowRepository.getJournalByNsidFyidMonth(nsId, start, end, month);
 	}
 
 	public List<AccountSolde> banqAccountSold(Long nsId, Long fyId) {
@@ -442,8 +436,8 @@ public class JournalService {
 		float soldeDebit = 0;
 		Account account = new Account();
 		account = accountService.get(subAccountId);
-		soldeCredit = journalRowRepository.getSoldeCreditByNsidFyid(nsId, subAccountId, start, end);
-		soldeDebit = journalRowRepository.getSoldeDebitByNsidFyid(nsId, subAccountId, start, end);
+		soldeCredit = journalPrevRowRepository.getSoldeCreditByNsidFyid(nsId, subAccountId, start, end);
+		soldeDebit = journalPrevRowRepository.getSoldeDebitByNsidFyid(nsId, subAccountId, start, end);
 		/** -A */
 		if (account.getLabelBilan().equals("PRODUIT") || account.getLabelBilan().equals("PASSIF")) {
 			solde = soldeCredit - soldeDebit;
@@ -466,8 +460,8 @@ public class JournalService {
 		float soldeDebit = 0;
 		Account account = new Account();
 		account = accountService.get(subAccountId);
-		soldeCredit = journalRowRepository.getSoldeCreditByNsidFyid(nsId, subAccountId, start, end);
-		soldeDebit = journalRowRepository.getSoldeDebitByNsidFyid(nsId, subAccountId, start, end);
+		soldeCredit = journalPrevRowRepository.getSoldeCreditByNsidFyid(nsId, subAccountId, start, end);
+		soldeDebit = journalPrevRowRepository.getSoldeDebitByNsidFyid(nsId, subAccountId, start, end);
 		/** -A */
 		if (account.getLabelBilan().equals("PRODUIT") || account.getLabelBilan().equals("PASSIF")) {
 			solde = soldeCredit - soldeDebit;
@@ -497,6 +491,7 @@ public class JournalService {
 
 	public float getSoldeByNsidMonth(Long nsId,String startstr,String endstr, Long subAccountId) {
 
+
 		ZoneId defaultZoneId = ZoneId.systemDefault();
 		LocalDate localDate1 = LocalDate.parse(startstr, DateTimeFormatter.ofPattern("d-MM-yyyy"));
 
@@ -506,7 +501,7 @@ public class JournalService {
 		Date start = Date.from(localDate1.atStartOfDay(defaultZoneId).toInstant());
 		Date end = Date.from(localDate2.atStartOfDay(defaultZoneId).toInstant());
 		
-		return getSoldeByNsidFyid(nsId,start,end, subAccountId);
+		return getSoldeByNsidFyid(nsId,start, end, subAccountId);
 	}
 
 	private float roundFloat(float f, int places) {

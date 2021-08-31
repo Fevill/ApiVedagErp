@@ -9,32 +9,32 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.entities.JournalPrevRow;
 import tim.vedagerp.api.model.IResultatMonth;
 import tim.vedagerp.api.model.Ibalance;
 import tim.vedagerp.api.model.ResultatRow;
 
-public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
+public interface JournalPrevRowRepository extends JpaRepository<JournalPrevRow, Long> {
 
-	List<JournalRow> findByCreditIdAndNamespaceIdAndDateOperationBetween(Long cid, Long nid, Date start, Date end);
+	List<JournalPrevRow> findByCreditIdAndNamespaceIdAndDateOperationBetween(Long cid, Long nid, Date start, Date end);
 
-	List<JournalRow> findByDebitIdAndNamespaceIdAndDateOperationBetween(Long did, Long nid, Date start, Date end);
+	List<JournalPrevRow> findByDebitIdAndNamespaceIdAndDateOperationBetween(Long did, Long nid, Date start, Date end);
 
-	Page<JournalRow> findAllByNamespaceIdAndDateOperationBetween(Pageable pageable, Long id, Date start, Date end);
+	Page<JournalPrevRow> findAllByNamespaceIdAndDateOperationBetween(Pageable pageable, Long id, Date start, Date end);
 
-	List<JournalRow> findAllByNamespaceId(Long id);
+	List<JournalPrevRow> findAllByNamespaceId(Long id);
 
 	/*
-	 * Recherche journal par mois en fonction de l'espace de travail et de
+	 * Recherche journalprev par mois en fonction de l'espace de travail et de
 	 * l'exercice fiscal
 	 */
-	@Query(value = "SELECT * FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND EXTRACT(MONTH FROM date_operation) = :month ORDER BY date_operation DESC", nativeQuery = true)
-	List<JournalRow> getJournalByNsidFyidMonth(@Param("nsid") Long nsId, @Param("start") Date start,
+	@Query(value = "SELECT * FROM journalprev WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND EXTRACT(MONTH FROM date_operation) = :month ORDER BY date_operation DESC", nativeQuery = true)
+	List<JournalPrevRow> getJournalByNsidFyidMonth(@Param("nsid") Long nsId, @Param("start") Date start,
 			@Param("end") Date end, @Param("month") int month);
 
 	/*
 	 * @Query("SELECT c.label,c.number, SUM(j1.amount) as debit " +
-	 * "FROM accounts AS c LEFT JOIN journal AS j1  ON j1.debit.id =c.id")
+	 * "FROM accounts AS c LEFT JOIN journalprev AS j1  ON j1.debit.id =c.id")
 	 * List<Object[]> countTotalCommentsByYear();
 	 */
 	/**
@@ -84,70 +84,61 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 	/**
 	 * Solde credit d'un sous comptes
 	 */
-	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND credit_id=:subAccountId", nativeQuery = true)
+	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journalprev WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND credit_id=:subAccountId", nativeQuery = true)
 	float getSoldeCreditByNsidFyid(@Param("nsid") Long nsId, @Param("subAccountId") Long subAccountId,
 			@Param("start") Date start, @Param("end") Date end);
 
 	/**
 	 * Solde debit d'un sous comptes
 	 */
-	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journal WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND debit_id=:subAccountId", nativeQuery = true)
+	@Query(value = "SELECT COALESCE(SUM(amount), 0) FROM journalprev WHERE namespace_id=:nsid AND date_operation BETWEEN :start AND :end AND debit_id=:subAccountId", nativeQuery = true)
 	float getSoldeDebitByNsidFyid(@Param("nsid") Long nsId, @Param("subAccountId") Long subAccountId,
 			@Param("start") Date start, @Param("end") Date end);
 
 	/*
-	 * Recherche journal par mois en fonction de l'espace de travail et de
+	 * Recherche journalprev par mois en fonction de l'espace de travail et de
 	 * l'exercice fiscal
 	 */
-	@Query(value = "SELECT * FROM journal " + "WHERE namespace_id=:nsid " + "AND credit_id=:accountid "
+	@Query(value = "SELECT * FROM journalprev " + "WHERE namespace_id=:nsid " + "AND credit_id=:accountid "
 			+ "AND date_operation BETWEEN :start AND :end " + "AND EXTRACT(MONTH FROM date_operation) = :month "
-			+ "UNION " + "SELECT * FROM journal " + "WHERE namespace_id=:nsid " + "AND debit_id=:accountid "
+			+ "UNION " + "SELECT * FROM journalprev " + "WHERE namespace_id=:nsid " + "AND debit_id=:accountid "
 			+ "AND date_operation BETWEEN :start AND :end " + "AND EXTRACT(MONTH FROM date_operation) = :month "
 			+ "ORDER BY date_operation DESC", nativeQuery = true)
-	List<JournalRow> getLedger(@Param("nsid") Long nsId, @Param("accountid") Long accountid, @Param("start") Date start,
+	List<JournalPrevRow> getLedger(@Param("nsid") Long nsId, @Param("accountid") Long accountid, @Param("start") Date start,
 			@Param("end") Date end, @Param("month") int month);
 
 
 
-	@Query(value = "SELECT vsCredit.mois, "
-	+"(COALESCE(vsCredit.soldeCredit,0)-COALESCE(vsDebit.soldeDebit,0))  as solde,  "
-	+"(COALESCE(vsCredit.soldePrevCredit,0)-COALESCE(vsDebit.soldePrevDebit,0))  as soldeprev,  "
-	+"COALESCE(vsCredit.soldeCredit,0)  as affaire  FROM (  "
-		+"SELECT SUM(amount) AS soldeCredit,  "
-		+"SUM(amountprev) AS soldePrevCredit,  "
-		+"EXTRACT(MONTH FROM date_operation) AS mois,  "
-		+"vju.namespace_id FROM public.v_journal_union vju "
+	@Query(value = "SELECT vsCredit.mois, (COALESCE(vsCredit.soldeCredit,0)-COALESCE(vsDebit.soldeDebit,0))  as solde, COALESCE(vsCredit.soldeCredit,0)  as affaire  FROM ( "
+		+"SELECT SUM(amount) AS soldeCredit, "
+		+"EXTRACT(MONTH FROM date_operation) AS mois, "
+		+"journalprev.namespace_id FROM public.journalprev "
 		+"LEFT JOIN accounts ON "
-		+"accounts.id = credit_id   "
-		+"LEFT JOIN fiscalyear ON  "
-		+"fiscalyear.namespace_id = vju.namespace_id  "
-		+"WHERE vju.namespace_id=:nsId   "
-		+"AND fiscalyear.id = :fyId AND date_operation BETWEEN   "
-		+"fiscalyear.start_date AND fiscalyear.end_date  "
-		+"AND accounts.label_bilan = 'PRODUIT'  "
-		+"GROUP BY mois,vju.namespace_id  "
-		+"ORDER BY mois ) as vsCredit  "
-		+"LEFT JOIN   "
-		+"(SELECT * FROM (  "
-			+"SELECT SUM(amount) AS soldeDebit, " 
-			+"SUM(amountprev) AS soldePrevDebit,  "
-			+"EXTRACT(MONTH FROM date_operation) AS mois,  " 
-			+"vju.namespace_id FROM public.v_journal_union vju  "
-			+"LEFT JOIN accounts ON  "
-			+"accounts.id = debit_id  " 
-			+"LEFT JOIN fiscalyear ON  "
-			+"fiscalyear.namespace_id = vju.namespace_id " 
-			+"WHERE vju.namespace_id=:nsId "
-			+"AND fiscalyear.id = :fyId AND date_operation  BETWEEN  " 
-			+"fiscalyear.start_date AND fiscalyear.end_date  "
-			+"AND accounts.label_bilan = 'CHARGE'  "
-			+"GROUP BY mois,vju.namespace_id  "
-			+"ORDER BY mois) as vsDebit0 ) as vsDebit  "
-			+"ON vsCredit.mois = vsDebit.mois", nativeQuery = true)
+		+"accounts.id = credit_id  "
+		+"LEFT JOIN fiscalyear ON "
+		+"fiscalyear.namespace_id = journalprev.namespace_id "
+		+"WHERE public.journalprev.namespace_id=:nsId  "
+		+"AND fiscalyear.id = :fyId AND date_operation BETWEEN " 
+		+"fiscalyear.start_date AND fiscalyear.end_date "
+		+"AND accounts.label_bilan = 'PRODUIT' "
+		+"GROUP BY mois,journalprev.namespace_id "
+		+"ORDER BY mois ) as vsCredit "
+		+"LEFT JOIN  "
+		+"(SELECT * FROM ( "
+		+"SELECT SUM(amount) AS soldeDebit,  "
+		+"EXTRACT(MONTH FROM date_operation) AS mois,  " 
+		+"journalprev.namespace_id FROM public.journalprev "
+		+"LEFT JOIN accounts ON "
+		+"accounts.id = debit_id  "
+		+"LEFT JOIN fiscalyear ON "
+		+"fiscalyear.namespace_id = journalprev.namespace_id "
+		+"WHERE public.journalprev.namespace_id=:nsId  "
+		+"AND fiscalyear.id = :fyId AND date_operation  BETWEEN  "
+		+"fiscalyear.start_date AND fiscalyear.end_date "
+		+"AND accounts.label_bilan = 'CHARGE' "
+		+"GROUP BY mois,journalprev.namespace_id "
+		+"ORDER BY mois) as vsDebit0 ) as vsDebit "
+		+"ON vsCredit.mois = vsDebit.mois", nativeQuery = true)
 	List<IResultatMonth>  getResultatByMonth(@Param("nsId") Long nsId, @Param("fyId") Long  fyId);
-
-
-
-
 
 }

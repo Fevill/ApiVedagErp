@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import tim.vedagerp.api.entities.JournalRow;
+import tim.vedagerp.api.model.IBudgetRow;
 import tim.vedagerp.api.model.IResultatMonth;
 import tim.vedagerp.api.model.Ibalance;
 import tim.vedagerp.api.model.ResultatRow;
@@ -145,6 +146,39 @@ public interface JournalRowRepository extends JpaRepository<JournalRow, Long> {
 			+"ORDER BY mois) as vsDebit0 ) as vsDebit  "
 			+"ON vsCredit.mois = vsDebit.mois", nativeQuery = true)
 	List<IResultatMonth>  getResultatByMonth(@Param("nsId") Long nsId, @Param("fyId") Long  fyId);
+
+
+	@Query(value = "SELECT accounts.id AS id, accounts.label AS label, "
+	+"EXTRACT(MONTH FROM date_operation) AS month, "
+	+"SUM(amount) AS solde, " 
+	+"SUM(amountprev) AS soldePrev "
+	+"FROM public.v_journal_union vju  " 
+	+"LEFT JOIN accounts ON   "
+	+"accounts.id = debit_id  " 
+	+"LEFT JOIN fiscalyear ON   "
+	+"fiscalyear.namespace_id = vju.namespace_id  "
+	+"WHERE vju.namespace_id=:nsId  "
+	+"AND fiscalyear.id = :fyId AND date_operation  BETWEEN   " 
+	+":start AND :end "
+	+"AND accounts.label_bilan = 'CHARGE'  " 
+	+"GROUP BY  month,vju.namespace_id,accounts.id", nativeQuery = true)
+	List<IBudgetRow> getBudgetCharges(@Param("nsId") Long nsId,@Param("fyId") Long fyId, @Param("start") Date start, @Param("end") Date end);
+
+	@Query(value = "SELECT accounts.id AS id, accounts.label AS label, "
+	+"EXTRACT(MONTH FROM date_operation) AS month, "
+	+"SUM(amount) AS solde, "
+	+"SUM(amountprev) AS soldePrev "
+	+"FROM public.v_journal_union vju   "
+	+"LEFT JOIN accounts ON   "
+	+"accounts.id = credit_id  " 
+	+"LEFT JOIN fiscalyear ON   "
+	+"fiscalyear.namespace_id = vju.namespace_id " 
+	+"WHERE vju.namespace_id=:nsId  "
+	+"AND fiscalyear.id = :fyId AND date_operation  BETWEEN   " 
+	+":start AND :end "
+	+"AND accounts.label_bilan = 'PRODUIT'   "
+	+"GROUP BY  month,vju.namespace_id,accounts.id", nativeQuery = true)
+	List<IBudgetRow> getBudgetProduits(@Param("nsId") Long nsId,@Param("fyId") Long fyId, @Param("start") Date start, @Param("end") Date end);
 
 
 

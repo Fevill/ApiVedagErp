@@ -28,11 +28,14 @@ import tim.vedagerp.api.model.AccountSolde;
 import tim.vedagerp.api.model.Bilan;
 import tim.vedagerp.api.model.BilanDetail;
 import tim.vedagerp.api.model.Ibalance;
+import tim.vedagerp.api.model.IBudgetRow;
 import tim.vedagerp.api.model.Ledger;
 import tim.vedagerp.api.model.Message;
 import tim.vedagerp.api.model.ResultatNsRow;
 import tim.vedagerp.api.model.ResultatRow;
 import tim.vedagerp.api.model.BudgetRow;
+import tim.vedagerp.api.model.Budget;
+import tim.vedagerp.api.model.BudgetPart;
 import tim.vedagerp.api.services.AccountService;
 import tim.vedagerp.api.services.JournalService;
 import tim.vedagerp.api.services.JournalPrevService;
@@ -161,7 +164,7 @@ public class JournalRowController {
 		}
 	}
 
-	@GetMapping("/budget")
+	@GetMapping("/budget-v1")
 	public ResponseEntity<?> getBudget(
 		@RequestParam("nsId") Long nsId,
 		@RequestParam("start") String startstr,
@@ -181,6 +184,43 @@ public class JournalRowController {
 				resultats.add(row);
 			}
 			return new ResponseEntity<>(resultats, HttpStatus.OK);
+		} catch (NoSuchElementException ex) {
+			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
+		}
+	}
+
+	@GetMapping("/budget")
+	public ResponseEntity<?> getBudgetV2(
+		@RequestParam("nsId") Long nsId,
+		@RequestParam("fyId") Long fyId,
+		@RequestParam("start") String start,
+		@RequestParam("end") String end) {
+		try {
+
+			//List<Account> accounts =  accountService.listSubLabelBilanStartWith(nsId,accountId);
+			Budget budget = new Budget();
+			List<IBudgetRow> p =journalService.getBudgetProduitsList(nsId, fyId, start, end);
+			List<IBudgetRow> c =journalService.getBudgetChargesList(nsId, fyId, start, end);
+			BudgetPart revenus = new BudgetPart();
+			BudgetPart spend = new BudgetPart();
+
+			revenus.setRow(p);
+			spend.setRow(c);
+
+			budget.setRevenus(revenus);
+			budget.setSpend(spend);
+			budget.calculSolde();
+			
+			//
+			/*for (Account account : accounts) {
+				BudgetRow row = new BudgetRow();
+				row.setAccount(account);
+				row.setSolde(journalService.getSoldeByNsidMonth(nsId, startstr,endstr, account.getId()));
+				row.setSoldeprev(journalPrevService.getSoldeByNsidMonth(nsId, startstr,endstr, account.getId()));
+				row.calculSoldeDiff();
+				resultats.add(row);
+			}*/
+			return new ResponseEntity<>(budget , HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);
 		}

@@ -33,6 +33,7 @@ import tim.vedagerp.api.entities.NameSpace;
 import tim.vedagerp.api.model.AccountSolde;
 import tim.vedagerp.api.model.Bilan;
 import tim.vedagerp.api.model.BilanDetail;
+import tim.vedagerp.api.model.IBudgetRow;
 import tim.vedagerp.api.model.IResultatMonth;
 import tim.vedagerp.api.model.Ibalance;
 import tim.vedagerp.api.model.ResultatRow;
@@ -507,6 +508,35 @@ public class JournalService {
 		Date end = Date.from(localDate2.atStartOfDay(defaultZoneId).toInstant());
 		
 		return getSoldeByNsidFyid(nsId,start,end, subAccountId);
+	}
+
+
+	public List<IBudgetRow> getBudgetProduitsList(Long nsId, Long fyId,String startstr, String endstr){
+
+		ZoneId defaultZoneId = ZoneId.systemDefault();
+		LocalDate localDate1 = LocalDate.parse(startstr, DateTimeFormatter.ofPattern("d-MM-yyyy"));
+
+		LocalDate localDate2 = LocalDate.parse(endstr, DateTimeFormatter.ofPattern("d-MM-yyyy"));
+
+        //local date + atStartOfDay() + default time zone + toInstant() = Date
+		Date start = Date.from(localDate1.atStartOfDay(defaultZoneId).toInstant());
+		Date end = Date.from(localDate2.atStartOfDay(defaultZoneId).toInstant());
+
+		return journalRowRepository.getBudgetProduits(nsId, fyId, start, end);
+	}
+
+	public List<IBudgetRow> getBudgetChargesList(Long nsId, Long fyId,String startstr, String endstr){
+
+		ZoneId defaultZoneId = ZoneId.systemDefault();
+		LocalDate localDate1 = LocalDate.parse(startstr, DateTimeFormatter.ofPattern("d-MM-yyyy"));
+
+		LocalDate localDate2 = LocalDate.parse(endstr, DateTimeFormatter.ofPattern("d-MM-yyyy"));
+
+        //local date + atStartOfDay() + default time zone + toInstant() = Date
+		Date start = Date.from(localDate1.atStartOfDay(defaultZoneId).toInstant());
+		Date end = Date.from(localDate2.atStartOfDay(defaultZoneId).toInstant());
+
+		return journalRowRepository.getBudgetCharges(nsId, fyId, start, end);
 	}
 
 	private float roundFloat(float f, int places) {

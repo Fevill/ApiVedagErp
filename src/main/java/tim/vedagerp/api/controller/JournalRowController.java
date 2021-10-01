@@ -211,15 +211,6 @@ public class JournalRowController {
 			budget.setSpend(spend);
 			budget.calculSolde();
 			
-			//
-			/*for (Account account : accounts) {
-				BudgetRow row = new BudgetRow();
-				row.setAccount(account);
-				row.setSolde(journalService.getSoldeByNsidMonth(nsId, startstr,endstr, account.getId()));
-				row.setSoldeprev(journalPrevService.getSoldeByNsidMonth(nsId, startstr,endstr, account.getId()));
-				row.calculSoldeDiff();
-				resultats.add(row);
-			}*/
 			return new ResponseEntity<>(budget , HttpStatus.OK);
 		} catch (NoSuchElementException ex) {
 			return new ResponseEntity<>("Erreur: " + ex.getMessage(), HttpStatus.OK);

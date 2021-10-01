@@ -230,6 +230,8 @@ public class JournalService {
 		return getRSolde(nsId, start, end,accountsCharges,accountsProduits);
 	}
 
+	
+
 	public ResultatRow getRSolde(Long nsId, Date start, Date end,List<Account> accountsCharges,List<Account> accountsProduits){
 
 		float soldeCharges = 0;
